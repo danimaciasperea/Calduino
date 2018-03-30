@@ -1,14 +1,15 @@
 /***************************************************
-This sketch decodes/encodes messages through and EMS BUS
-and sends them in a XML format using a WiFly module (RN-XV  RN-171)
+This sketch decodes/encodes messages through EMS BUS (Buderus / Nefit Boilers)
+and sends them in XML format using a WiFly module (RN-XV  RN-171)
 
 last edit	:  07 MAY 2017
 
-07 MAY 2017	: GitHub Version 1.0 (clean and comment code)
+29 MAR 2018	: Short corrections
+07 MAY 2017	: GitHub Version 1.0
 01 MAY 2017 : Included tags to skip operations when an error is detected
 15 ABR 2017 : Include timestamp in every XML file when the EMS operation returns correctly 
 14 ABR 2017 : Added a timeout in EMS reader function to force the end of the function when nothing is received
-01 ABR 2017 : Redefined WiFly operations
+1  ABR 2017 : Redefined WiFly operations
 
 author		:	dani.macias.perea@gmail.com
 
@@ -17,6 +18,8 @@ Get UBA Monitor			- calduino/?op=01
 Get UBA WW Monitor		- calduino/?op=02
 Get RC35_HC1			- calduino/?op=03
 Get RC35_HC2			- calduino/?op=04
+Get General Monitor		- calduino/?op=05
+Get All Monitors	    - calduino/?op=08
 
 Set RC35 Working Mode	- calduino/?op=10?hc=X?wm=Y (hc - Heath Circuit 1 Ground Floor / Heath Circuit 2 Top Floor) (wm - Working Mode 0 = night, 1 = day, 2 = auto)
 Set RC35 Temperature	- calduino/?op=11?hc=X?wm=Y?tp=ZZ (hc - Heath Circuit 1 Ground Floor / Heath Circuit 2 Top Floor) (wm - Working Mode 0 = night, 1 = day, 2 = holiday) (tp - Temperature x 2)
@@ -85,6 +88,8 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define GET_UBA_MONITOR_WW 2
 #define GET_RC35_MONITOR_HC1 3
 #define GET_RC35_MONITOR_HC2 4
+#define GET_GENERAL_MONITOR 5
+#define GET_ALL_MONITORS 8
 #define GET_RCTIME 9
 #define SET_RC35_WORKING_MODE 10
 #define SET_RC35_TEMPERATURE 11
@@ -135,6 +140,54 @@ int operationsReceived = 0;
 int operationsOK = 0;
 int operationsNOK = 0;
 
+// Common variables
+long timeout;
+boolean returnStatus;
+
+// UBAMonitor Variables
+char bufferFloat[4];
+byte selImpTemp;
+float curImpTemp;
+float retTemp;
+byte selBurnPow;
+byte curBurnPow;
+float flameCurr;
+float sysPress;
+float extTemp;
+float boilTemp;
+byte pumpMod;
+boolean burnGas;
+boolean fanWork;
+boolean ignWork;
+boolean heatPmp;
+boolean wWHeat;
+boolean wWcirc;
+char srvCode[4] = { ' ', '-', ' ', '\0' };
+int errCode;
+unsigned long burnStarts;
+unsigned long burnWorkMin;
+unsigned long heatWorkMin;
+unsigned long uBAWorkMin;
+
+// UBAMonitorWW Variables
+float wWCurTmp;
+unsigned long wWWorkM;
+unsigned long wWStarts;
+uint8_t wWSelTemp;
+uint8_t wWOneTime;
+uint8_t wWWorkMod;
+uint8_t wWPumpWorkMod;
+
+// RCMonitor Variables
+float hCSelTemp[2];
+boolean hCDayMod[2];
+boolean hCSumMod[2];
+char xmlTag[20];
+
+//RC35 Working Mode Variables
+float hCSelNightTemp[2];
+float hCSelDayTemp[2];
+byte hCWorkMod[2];
 
 #pragma endregion variables
 
@@ -287,7 +340,7 @@ boolean sendRequest(char *outEMSBuffer)
 		}
 	}
 
-	// wait two milliseconds and send the xmitBuffer (7 bytes + break)
+	// wait two milliseconds and send the outEMSBuffer (7 bytes + break) 
 	delay(2);
 	sendBuffer(outEMSBuffer, 7);
 	return true;
@@ -367,7 +420,7 @@ boolean getRCTime()
 	// third position is the message type
 	outEMSBuffer[2] = RCTIME;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested. Always ask for the maximum number of bytes.
 	outEMSBuffer[4] = 20;
 
@@ -439,6 +492,26 @@ boolean getRCTime()
 	return returnStatus;
 }
 
+/** 
+Send several EMS request to get all the available data and send the answer in XML format via WiFly module
+
+@return whether the operation has been correctly executed or not.
+*/
+
+boolean getAllMonitors()
+{
+	wifly.sendWifly(F("<AllMonitors>"));
+	returnStatus = getUBAMonitor();
+	returnStatus &= getUBAMonitorWarmWater();
+	returnStatus &= getRC35MonitorHeatingCircuit(1);
+	returnStatus &= getRC35MonitorHeatingCircuit(2);
+	returnStatus &= getGeneralMonitor(true);
+	returnStatus &= getCalduinoStats(1);
+	wifly.sendWifly(F("</AllMonitors>"));
+
+	return returnStatus;
+
+}
 /**
 Send a EMS request to read UBA Monitor and send the answer in XML format via WiFly module
 
@@ -446,32 +519,6 @@ Send a EMS request to read UBA Monitor and send the answer in XML format via WiF
 */
 boolean getUBAMonitor()
 {
-
-	// UBAMonitor Variables
-	boolean returnStatus = false;
-	char bufferFloat[4];
-	byte selImpTemp;
-	float curImpTemp;
-	float retTemp;
-	boolean burnGas;
-	boolean fanWork;
-	boolean ignWork;
-	boolean heatPmp;
-	boolean wWHeat;
-	boolean wWCirc;
-	byte selBurnPow;
-	byte curBurnPow;
-	float flameCurr;
-	float sysPress;
-	char srvCode[4] = { ' ', '-', ' ', '\0' };
-	int errCode;
-	float extTemp;
-	float boilTemp;
-	byte pumpMod;
-	unsigned long burnStarts;
-	unsigned long burnWorkMin;
-	unsigned long heatWorkMin;
-	unsigned long uBAWorkMin;
 
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
@@ -481,7 +528,7 @@ boolean getUBAMonitor()
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_FAST;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 32;
 
@@ -489,7 +536,7 @@ boolean getUBAMonitor()
 	sendRequest(outEMSBuffer);
 
 	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
-	long timeout = (long)millis() + EMSMaxAnswerTime;
+	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
 	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
@@ -512,6 +559,10 @@ boolean getUBAMonitor()
 					selImpTemp = (uint8_t)inEMSBuffer[4];
 					curImpTemp = ((float)((((uint8_t)inEMSBuffer[5] << 8) + (uint8_t)inEMSBuffer[6]))) / 10;
 					retTemp = ((float)((((uint8_t)inEMSBuffer[17] << 8) + (uint8_t)inEMSBuffer[18]))) / 10;
+					selBurnPow = (uint8_t)inEMSBuffer[7];
+					curBurnPow = (uint8_t)inEMSBuffer[8];
+					flameCurr = ((float)((((uint8_t)inEMSBuffer[19] << 8) + (uint8_t)inEMSBuffer[20]))) / 10;
+					sysPress = ((float)((uint8_t)inEMSBuffer[21]) / 10);
 
 					byte auxiliarVariable = inEMSBuffer[11];
 					burnGas = bitRead(auxiliarVariable, 0);
@@ -519,18 +570,10 @@ boolean getUBAMonitor()
 					ignWork = bitRead(auxiliarVariable, 3);
 					heatPmp = bitRead(auxiliarVariable, 5);
 					wWHeat = bitRead(auxiliarVariable, 6);
-					wWCirc = bitRead(auxiliarVariable, 7);
-
-					selBurnPow = (uint8_t)inEMSBuffer[7];
-					curBurnPow = (uint8_t)inEMSBuffer[8];
-
-					flameCurr = ((float)((((uint8_t)inEMSBuffer[19] << 8) + (uint8_t)inEMSBuffer[20]))) / 10;
-					sysPress = ((float)((uint8_t)inEMSBuffer[21]) / 10);
-
+					wWcirc = bitRead(auxiliarVariable, 7);
 					srvCode[0] = (uint8_t)inEMSBuffer[22];
 					srvCode[2] = (uint8_t)inEMSBuffer[23];
-
-					errCode = ((int)((((uint8_t)inEMSBuffer[5] << 8) + (uint8_t)inEMSBuffer[6])));
+					errCode = ((int)((((uint8_t)inEMSBuffer[24] << 8) + (uint8_t)inEMSBuffer[25])));
 
 					returnStatus = true;
 				}
@@ -553,7 +596,7 @@ boolean getUBAMonitor()
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_SLOW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 24;
 
@@ -608,7 +651,7 @@ boolean getUBAMonitor()
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKING_HOURS;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 3;
 
@@ -656,29 +699,21 @@ boolean getUBAMonitor()
 	if(returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
-		wifly.sendWiflyXML(F("SelImpTemp"), selImpTemp);
-		wifly.sendWiflyXML(F("CurImpTemp"), curImpTemp);
-		wifly.sendWiflyXML(F("RetTemp"), retTemp);
-		wifly.sendWiflyXML(F("ExtTemp"), extTemp);
-		wifly.sendWiflyXML(F("BoilTemp"), boilTemp);
-		wifly.sendWiflyXML(F("BurnGas"), burnGas);
-		wifly.sendWiflyXML(F("FanWork"), fanWork);
-		wifly.sendWiflyXML(F("IgnWork"), ignWork);
-		wifly.sendWiflyXML(F("HeatPmp"), heatPmp);
-		wifly.sendWiflyXML(F("WWHeat"), wWHeat);
-		wifly.sendWiflyXML(F("WWCirc"), wWCirc);
-		wifly.sendWiflyXML(F("SelBurnPow"), selBurnPow);
-		wifly.sendWiflyXML(F("CurBurnPow"), curBurnPow);
-		wifly.sendWiflyXML(F("FlameCurr"), flameCurr);
-		wifly.sendWiflyXML(F("SysPress"), sysPress);
-		wifly.sendWiflyXML(F("SrvCode"), srvCode);
-		wifly.sendWiflyXML(F("ErrCode"), errCode);
-		wifly.sendWiflyXML(F("PumpMod"), pumpMod);
-		wifly.sendWiflyXML(F("BurnStarts"), burnStarts);
-		wifly.sendWiflyXML(F("BurnWorkMin"), burnWorkMin);
-		wifly.sendWiflyXML(F("HeatWorkMin"), heatWorkMin);
-		wifly.sendWiflyXML(F("UBAWorkMin"), uBAWorkMin);
-		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+		wifly.sendWiflyXML(F("SelImpTemp"), selImpTemp); //0
+		wifly.sendWiflyXML(F("CurImpTemp"), curImpTemp); //1
+		wifly.sendWiflyXML(F("RetTemp"), retTemp);       //2
+		wifly.sendWiflyXML(F("ExtTemp"), extTemp);       //3
+		wifly.sendWiflyXML(F("BoilTemp"), boilTemp);     //4
+		wifly.sendWiflyXML(F("SelBurnPow"), selBurnPow); //5
+		wifly.sendWiflyXML(F("CurBurnPow"), curBurnPow); //6
+		wifly.sendWiflyXML(F("FlameCurr"), flameCurr);   //7
+		wifly.sendWiflyXML(F("SysPress"), sysPress);     //8
+		wifly.sendWiflyXML(F("PumpMod"), pumpMod);       //9
+		wifly.sendWiflyXML(F("BurnStarts"), burnStarts); //10
+		wifly.sendWiflyXML(F("BurnWorkMin"), burnWorkMin);//11
+		wifly.sendWiflyXML(F("HeatWorkMin"), heatWorkMin);//12
+		wifly.sendWiflyXML(F("UBAWorkMin"), uBAWorkMin);  //13
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);//14
 	}
 	else
 	{
@@ -691,18 +726,10 @@ boolean getUBAMonitor()
 	eMSSerial.print(F("Selected Flow (impulsion) Temperature: ")); eMSSerial.println(selImpTemp);
 	eMSSerial.print(F("Current Flow (impulsion) Temperature: ")); eMSSerial.println(curImpTemp, 1);
 	eMSSerial.print(F("Return Temperature: ")); eMSSerial.println(retTemp, 1);
-	eMSSerial.print(F("Burning gas? ")); if(burnGas) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
-	eMSSerial.print(F("Fan? ")); if(fanWork) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
-	eMSSerial.print(F("Ignition? ")); if(ignWork) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
-	eMSSerial.print(F("Heating Pump? ")); if(heatPmp) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
-	eMSSerial.print(F("Warm water heating? ")); if(wWHeat) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
-	eMSSerial.print(F("Water Circulation? ")); if(wWCirc) eMSSerial.println(F("true")); else eMSSerial.println(F("false"));
 	eMSSerial.print(F("Selected Burner Power: ")); eMSSerial.print(selBurnPow); eMSSerial.println(F("%"));
 	eMSSerial.print(F("Current Burner Power: ")); eMSSerial.print(curBurnPow); eMSSerial.println(F("%"));
 	eMSSerial.print(F("Flame current: ")); eMSSerial.print(flameCurr, 1); eMSSerial.println(F(" uA"));
 	eMSSerial.print(F("System pressure: ")); eMSSerial.print(sysPress, 1); eMSSerial.println(F(" bar"));
-	eMSSerial.print(F("Service Code: ")); eMSSerial.println(srvCode);
-	eMSSerial.print(F("Error Code: ")); eMSSerial.println(errCode);
 	eMSSerial.print(F("External Temperature: ")); eMSSerial.println(extTemp);
 	eMSSerial.print(F("Boiler Temperature: ")); eMSSerial.println(boilTemp, 1);
 	eMSSerial.print(F("Pump Modulation: ")); eMSSerial.print(pumpMod); eMSSerial.println(F("%"));
@@ -722,16 +749,6 @@ Send a EMS request to read UBA Warm Water Monitor and send the answer in XML for
 */
 boolean getUBAMonitorWarmWater()
 {
-	// UBAMonitorWW Variables
-	float wWCurTmp;
-	unsigned long wWWorkM;
-	unsigned long wWStarts;
-	uint8_t wWOneTime;
-	uint8_t wWSelTemp;
-	uint8_t wWWorkMod;
-	uint8_t wWPumpWorkMod;
-	boolean returnStatus = false;
-
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -740,7 +757,7 @@ boolean getUBAMonitorWarmWater()
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 24;
 
@@ -748,7 +765,7 @@ boolean getUBAMonitorWarmWater()
 	sendRequest(outEMSBuffer);
 
 	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
-	long timeout = (long)millis() + EMSMaxAnswerTime;
+	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
 	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
@@ -772,7 +789,6 @@ boolean getUBAMonitorWarmWater()
 					wWStarts = (((unsigned long)(uint8_t)inEMSBuffer[17]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[18]) << 8) + ((uint8_t)inEMSBuffer[19]);
 					wWWorkM = (((unsigned long)(uint8_t)inEMSBuffer[14]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[15]) << 8) + ((uint8_t)inEMSBuffer[16]);
 					wWOneTime = bitRead((uint8_t)inEMSBuffer[9], 1);
-
 					returnStatus = true;
 				}
 				else
@@ -793,7 +809,7 @@ boolean getUBAMonitorWarmWater()
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 10;
 
@@ -834,16 +850,16 @@ boolean getUBAMonitorWarmWater()
 			}
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
-	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	// first position is the transmitterID. Ox0B is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
 	outEMSBuffer[1] = RC35_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 20;
 
@@ -892,14 +908,11 @@ boolean getUBAMonitorWarmWater()
 	if(returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
-		wifly.sendWiflyXML(F("WWCurTmp"), wWCurTmp);
-		wifly.sendWiflyXML(F("WWSelTemp"), wWSelTemp);
-		wifly.sendWiflyXML(F("WWOneTime"), wWOneTime);
-		wifly.sendWiflyXML(F("WWWorkMod"), wWWorkMod);
-		wifly.sendWiflyXML(F("WWPumpWorkMod"), wWPumpWorkMod);
-		wifly.sendWiflyXML(F("WWStarts"), wWStarts);
-		wifly.sendWiflyXML(F("WWWorkM"), wWWorkM);
-		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+		wifly.sendWiflyXML(F("WWCurTmp"), wWCurTmp);          //0
+		wifly.sendWiflyXML(F("WWSelTemp"), wWSelTemp);        //1		
+		wifly.sendWiflyXML(F("WWStarts"), wWStarts);          //2
+		wifly.sendWiflyXML(F("WWWorkM"), wWWorkM);            //3
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC); //4
 	}
 	else
 	{
@@ -911,7 +924,6 @@ boolean getUBAMonitorWarmWater()
 	eMSSerial.print(F("Warm Water Current Temperature: ")); eMSSerial.println(wWCurTmp, 1);
 	eMSSerial.print(F("Counting warm water Starts: ")); eMSSerial.print(wWStarts); eMSSerial.println(F(" times"));
 	eMSSerial.print(F("Warm water Working Minutes: ")); eMSSerial.print(wWWorkM); eMSSerial.println(F(" minutes"));
-	eMSSerial.print(F("One Time Loading: ")); eMSSerial.println(wWOneTime);
 	eMSSerial.print(F("Warm Water Selected Temperature: ")); eMSSerial.println(wWSelTemp);
 	eMSSerial.print(F("Warm Water Working Mode: ")); eMSSerial.println(wWWorkMod);
 	eMSSerial.print(F("Warm Water Pump Working Mode: ")); eMSSerial.println(wWPumpWorkMod);
@@ -922,25 +934,11 @@ boolean getUBAMonitorWarmWater()
 
 /**
 Send a EMS request to read RC35 Monitor Heating Circuit and send the answer in XML format via WiFly module
-@selHC the Heating Circuit for which we want to obtain the information 
+@selHC the Heating Circuit for which we want to obtain the information (1 or 2)
 @return whether the operation has been correctly executed or not.
 */
 boolean getRC35MonitorHeatingCircuit(byte selHC)
 {
-	// RCMonitor Variables
-	float hCSelTemp[2];
-	boolean hCSumMod[2];
-	boolean hCHolyMod[2];
-	boolean hCPauseMod[2];
-	boolean hCDayMod[2];
-	float hCSelNightTemp[2];
-	float hCSelDayTemp[2];
-	float hCSelHolyTemp[2];
-	byte hCWorkMod[2];
-	char xmlTag[20];
-	long timeout;
-	boolean returnStatus = false;
-
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -959,7 +957,7 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 	}
 	else goto sendXML;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 10;
 
@@ -988,10 +986,8 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 				if(inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
-					hCSumMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[5], 0);
-					hCHolyMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[4], 5);
-					hCPauseMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[5], 7);
 					hCDayMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[5], 1);
+					hCSumMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[5], 0);
 
 					returnStatus = true;
 				}
@@ -1004,17 +1000,25 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 			}
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
 	outEMSBuffer[1] = RC35_ID | 0x80;
 	// third position is the message type
-	if(selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
-	else outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
+	if(selHC == 1)
+	{
+		outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+	}
+	else if(selHC == 2)
+	{
+		outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
+	}
+	else goto sendXML;
+
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 12;
 
@@ -1044,13 +1048,102 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 				{
 					hCSelNightTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
 					hCSelDayTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
-					hCSelHolyTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[7])) / 2;
 					hCWorkMod[selHC - 1] = (uint8_t)inEMSBuffer[11];
 
 					returnStatus = true;
 				}
 				else
-				{	
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+	
+
+
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+    sendXML:
+	wifly.sendWiflyXMLTag(xmlTag,0);
+	if(returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("HCSelTemp"), hCSelTemp[selHC - 1]);	//0	
+		wifly.sendWiflyXML(F("HCDayMod"), hCDayMod[selHC - 1]);		//1
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);       //2
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWiflyXMLTag(xmlTag, 1);
+
+	return returnStatus;
+}
+
+/**
+Send a number of EMS requests to read all the parameters that can be changed using Calduino
+@onlyPrint whether if the variables should be updated (sending EMS commands) or only printed
+@return whether the operation has been correctly executed or not.
+*/
+boolean getGeneralMonitor(boolean onlyPrint)
+{
+	if(onlyPrint) goto sendXML;
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = MC10_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = UBA_MONITOR_FAST;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 32;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == UBA_MONITOR_FAST)
+				{
+					byte auxiliarVariable = inEMSBuffer[11];
+					burnGas = bitRead(auxiliarVariable, 0);
+					fanWork = bitRead(auxiliarVariable, 2);
+					ignWork = bitRead(auxiliarVariable, 3);
+					heatPmp = bitRead(auxiliarVariable, 5);
+					wWHeat = bitRead(auxiliarVariable, 6);
+					wWcirc = bitRead(auxiliarVariable, 7);
+					srvCode[0] = (uint8_t)inEMSBuffer[22];
+					srvCode[2] = (uint8_t)inEMSBuffer[23];
+					errCode = ((int)((((uint8_t)inEMSBuffer[24] << 8) + (uint8_t)inEMSBuffer[25])));
+
+					returnStatus = true;
+				}
+				else
+				{
 					// stop the operation in order to save time
 					returnStatus = false;
 					goto sendXML;
@@ -1060,44 +1153,402 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 	}
 
 
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 12;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSelNightTemp[0] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
+					hCSelDayTemp[0] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCWorkMod[0] = (uint8_t)inEMSBuffer[11];
+
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 12;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSelNightTemp[1] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
+					hCSelDayTemp[1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCWorkMod[1] = (uint8_t)inEMSBuffer[11];
+
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type. Depends on the Heat Circuit passed as parameter
+	outEMSBuffer[2] = RC35_MONITOR_HC1;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 10;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSelTemp[0] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCSumMod[0] = bitRead((uint8_t)inEMSBuffer[5], 0);
+					hCDayMod[0] = bitRead((uint8_t)inEMSBuffer[5], 1);
+
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type. Depends on the Heat Circuit passed as parameter
+	outEMSBuffer[2] = RC35_MONITOR_HC2;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 10;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSelTemp[1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCSumMod[1] = bitRead((uint8_t)inEMSBuffer[5], 0);
+					hCDayMod[1] = bitRead((uint8_t)inEMSBuffer[5], 1);
+
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = MC10_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = UBA_MONITOR_WW;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 24;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == UBA_MONITOR_WW)
+				{
+					wWOneTime = bitRead((uint8_t)inEMSBuffer[9], 1);
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = MC10_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = UBA_PARAMETER_WW;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 10;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == UBA_PARAMETER_WW)
+				{
+					wWSelTemp = (uint8_t)inEMSBuffer[6];
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 20;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if(eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if(ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if(crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if(inEMSBuffer[2] == UBA_WORKINGMODE_WW)
+				{
+					wWWorkMod = (uint8_t)inEMSBuffer[6];
+					wWPumpWorkMod = (uint8_t)inEMSBuffer[7];
+
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
-    sendXML:
-	wifly.sendWiflyXMLTag(xmlTag,0);
+sendXML:
+	wifly.sendWifly(F("<GeneralMonitor>"));
 	if(returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
-		wifly.sendWiflyXML(F("HCSelTemp"), hCSelTemp[selHC - 1]);
-		wifly.sendWiflyXML(F("HCSumMod"), hCSumMod[selHC - 1]);
-		wifly.sendWiflyXML(F("HCHolyMod"), hCHolyMod[selHC - 1]);
-		wifly.sendWiflyXML(F("HCPauseMod"), hCPauseMod[selHC - 1]);
-		wifly.sendWiflyXML(F("HCDayMod"), hCDayMod[selHC - 1]);
-		wifly.sendWiflyXML(F("HCSelNightTemp"), hCSelNightTemp[selHC - 1]);
-		wifly.sendWiflyXML(F("HCSelDayTemp"), hCSelDayTemp[selHC - 1]);
-		wifly.sendWiflyXML(F("HCSelHolyTemp"), hCSelHolyTemp[selHC - 1]);
-		wifly.sendWiflyXML(F("HCWorkMod"), hCWorkMod[selHC - 1]);
+		wifly.sendWiflyXML(F("HC1SelDayTemp"), hCSelDayTemp[0]);    //0 
+		wifly.sendWiflyXML(F("HC2SelDayTemp"), hCSelDayTemp[1]);    //1
+		wifly.sendWiflyXML(F("HC1SelNightTemp"), hCSelNightTemp[0]);//2
+		wifly.sendWiflyXML(F("HC2SelNightTemp"), hCSelNightTemp[1]);//3
+		wifly.sendWiflyXML(F("HC1SelTemp"), hCSelTemp[0]);
+		wifly.sendWiflyXML(F("HC2SelTemp"), hCSelTemp[1]);
+		wifly.sendWiflyXML(F("HC1WorkMod"), hCWorkMod[0]);
+		wifly.sendWiflyXML(F("HC2WorkMod"), hCWorkMod[1]);
+		wifly.sendWiflyXML(F("HC1DayMod"), hCDayMod[0]);
+		wifly.sendWiflyXML(F("HC2DayMod"), hCDayMod[1]);
+		wifly.sendWiflyXML(F("HC1SumMod"), hCSumMod[0]);
+		wifly.sendWiflyXML(F("HC2SumMod"), hCSumMod[1]);
+		wifly.sendWiflyXML(F("WWSelTemp"), wWSelTemp);
+		wifly.sendWiflyXML(F("WWOneTime"), wWOneTime);
+		wifly.sendWiflyXML(F("WWWorkMod"), wWWorkMod);
+		wifly.sendWiflyXML(F("WWPumpWorkMod"), wWPumpWorkMod);
+		wifly.sendWiflyXML(F("BurnGas"), burnGas);
+		wifly.sendWiflyXML(F("IgnWork"), ignWork);
+		wifly.sendWiflyXML(F("FanWork"), fanWork);
+		wifly.sendWiflyXML(F("HeatPmp"), heatPmp);
+		wifly.sendWiflyXML(F("WWHeat"), wWHeat);
+		wifly.sendWiflyXML(F("WWCirc"), wWcirc);
+		wifly.sendWiflyXML(F("SrvCode"), srvCode);
+		wifly.sendWiflyXML(F("ErrCode"), errCode);
 		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
 	}
 	else
 	{
 		wifly.sendWiflyXML(F("Return"), returnStatus);
 	}
-	wifly.sendWiflyXMLTag(xmlTag, 1);
-
-
-#if DEBUG
-	eMSSerial.print(F("Heating Circuit X - Room Selected Temperature: ")); eMSSerial.println(hCSelTemp[selHC - 1], 1);
-	eMSSerial.print(F("Heating Circuit X - Summer Mode: ")); eMSSerial.println(hCSumMod[selHC - 1]);
-	eMSSerial.print(F("Heating Circuit X - Holiday Mode: ")); eMSSerial.println(hCHolyMod[selHC - 1]);
-	eMSSerial.print(F("Heating Circuit X - Pause Mode: ")); eMSSerial.println(hCPauseMod[selHC - 1]);
-	eMSSerial.print(F("Heating Circuit X - Day Mode: ")); eMSSerial.println(hCDayMod[selHC - 1]);
-	eMSSerial.print(F("Heating Circuit X - Room Selected Night Temperature: ")); eMSSerial.println(hCSelNightTemp[selHC - 1], 1);
-	eMSSerial.print(F("Heating Circuit X - Room Selected Day Temperature: ")); eMSSerial.println(hCSelDayTemp[selHC - 1], 1);
-	eMSSerial.print(F("Heating Circuit X - Room Selected Holiday Temperature: ")); eMSSerial.println(hCSelHolyTemp[selHC - 1], 1);
-	eMSSerial.print(F("Heating Circuit X - Working Mode: ")); eMSSerial.println(hCWorkMod[selHC - 1]);
-#endif
+	wifly.sendWifly(F("</GeneralMonitor>"));
 
 	return returnStatus;
-
 }
 
 /**
@@ -1131,7 +1582,7 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 		strcpy_P(xmlTag, PSTR("SetRCHC2WorkingMode"));
 	}
 	else goto sendXML;
-	// fourth position is the offset in the buffer. Working mode is at position 12, so 12-5=8
+	// fourth position is the offset in the buffer. Working mode is at position 11, so 11-4=7
 	outEMSBuffer[3] = 0x07;
 
 	// fifth position is the data to send
@@ -1169,13 +1620,13 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
-	// second position is destinationID. Masked with 0x80 as a read command
+	// second position is destinationID. Masked with 0x80 as a read command.
 	outEMSBuffer[1] = RC35_ID | 0x80;
 	// third position is the message type
 	if(selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 	else outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 12;
 
@@ -1262,10 +1713,10 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	long timeout;
 	boolean returnStatus = false;
 
-	// load outEMSBuffer with corresponding values.
+	// load outEMSBuffer with corresponding values
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
-	// second position is destinationID. Masked with 0x80 as a read command
+	// second position is destinationID.
 	outEMSBuffer[1] = RC35_ID;
 	// third position is the message type
 	if(selHC == 1)
@@ -1280,7 +1731,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	}
 	else goto sendXML;
 
-	// fourth position is the offset in the buffer. Night is byte 6 (6-5 (offset) = 1 (should write 1)) + selMode (0-2) = 6->1 (night) - 7->2 (day) - 8->3 (holidays)
+	// fourth position is the offset in the buffer. Night is byte 5 (Offset=5-4=1), Day is byte 6 (Offset=2), Holidays is byte 7 (Offset=3)
 	if(selMode > 2 || selMode < 0) goto sendXML;
 	else outEMSBuffer[3] = selMode+1;
 	// fifth position is the data to send
@@ -1315,7 +1766,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 		}
 	}
 	
-	// load outEMSBuffer with corresponding values.
+	// load outEMSBuffer with corresponding values
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
@@ -1324,7 +1775,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	if(selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 	else outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 12;
 
@@ -1430,8 +1881,8 @@ boolean setWarmWaterTemperature(byte selTmp)
 	outEMSBuffer[1] = MC10_ID;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
-	// fourth position is the offset in the buffer. Selected Temperature is position 7 - 5 = 2
-	outEMSBuffer[3] = 0x02;
+	// fourth position is the offset in the buffer. Selected Temperature is position 6 - 4 = 2
+	outEMSBuffer[3] = 2;
 	// fifth position is the data to send
 	if(selTmp < MAX_WW_TEMPERATURE) outEMSBuffer[4] = selTmp; 
 	else goto sendXML;	
@@ -1472,7 +1923,7 @@ boolean setWarmWaterTemperature(byte selTmp)
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 10;
 
@@ -1562,8 +2013,8 @@ boolean setWarmWaterWorkingMode(byte selMode)
 	outEMSBuffer[1] = RC35_ID;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
-	// fourth position is the offset in the buffer. Warm Water Working Mode is position 7 - 5 = 2
-	outEMSBuffer[3] = 0x02;
+	// fourth position is the offset in the buffer. Warm Water Working Mode is position 6 - 4 = 2
+	outEMSBuffer[3] = 2;
 	// fifth position is the data to send
 	if(selMode > 2 || selMode < 0) goto sendXML;
 	else outEMSBuffer[4] = selMode;
@@ -1602,8 +2053,8 @@ boolean setWarmWaterWorkingMode(byte selMode)
 	outEMSBuffer[1] = RC35_ID;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
-	// fourth position is the offset in the buffer. Warm Watter circulation Pump is 8 - 5 = 03
-	outEMSBuffer[3] = 0x03;
+	// fourth position is the offset in the buffer. Warm Watter circulation Pump is 7 - 4 = 3
+	outEMSBuffer[3] = 3;
 	// fifth position is the data to be sent
 	outEMSBuffer[4] = selMode;
 
@@ -1642,7 +2093,7 @@ boolean setWarmWaterWorkingMode(byte selMode)
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 20;
 
@@ -1737,8 +2188,8 @@ boolean setWarmWaterOneTime(byte selMode)
 	outEMSBuffer[1] = MC10_ID;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_FLAG_WW;
-	// fifth position is the offset in the buffer. One Time Loading Warm Water is position 5 - 5 = 0
-	outEMSBuffer[3] = 0x00;
+	// fifth position is the offset in the buffer. One Time Loading Warm Water is position 4 - 4 = 0
+	outEMSBuffer[3] = 0;
 	// fifth position is the data to send
 	if(selMode == 0) outEMSBuffer[4] = WW_ONETIME_OFF;
 	else if(selMode == 1) outEMSBuffer[4] = WW_ONETIME_ON;
@@ -1792,7 +2243,7 @@ retryOp:
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
-	outEMSBuffer[3] = 0x00;
+	outEMSBuffer[3] = 0;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 24;
 
@@ -1908,13 +2359,13 @@ boolean getCalduinoStats(byte mode)
 		wifly.sendWiflyXML(F("Time"), wifly.getTime(auxBuffer, sizeof(auxBuffer)));
 		wifly.sendWiflyXML(F("Restarts"), wifly.getRestarts());
 	}
-	wifly.sendWiflyXML(F("ArdUpTime"), (uint32_t)(currentRTC - startedArduinoRTC));
-	wifly.sendWiflyXML(F("WiFlyUpTime"), wifly.getUptime());
-	wifly.sendWiflyXML(F("SecLastEMSOp"), (uint32_t)(currentRTC - lastEMSOperationRTC));
-	wifly.sendWiflyXML(F("OpRec"), operationsReceived - 1);
-	wifly.sendWiflyXML(F("OpOK"), operationsOK);
-	wifly.sendWiflyXML(F("OpNOK"), operationsNOK);
-	wifly.sendWiflyXML(F("RTC"), currentRTC);
+	wifly.sendWiflyXML(F("ArdUpTime"), (uint32_t)(currentRTC - startedArduinoRTC)); //0
+	wifly.sendWiflyXML(F("WiFlyUpTime"), wifly.getUptime());                        //1
+	wifly.sendWiflyXML(F("SecLastEMSOp"), (uint32_t)(currentRTC - lastEMSOperationRTC));//2
+	wifly.sendWiflyXML(F("OpRec"), operationsReceived - 1); //3
+	wifly.sendWiflyXML(F("OpOK"), operationsOK);//4
+	wifly.sendWiflyXML(F("OpNOK"), operationsNOK);//5
+	wifly.sendWiflyXML(F("RTC"), currentRTC);//6
 	wifly.sendWifly(F("</Calduino>"));
 
 	return true;
@@ -2249,6 +2700,13 @@ boolean executeOperation(byte operationRequested)
 
 	switch(operationRequested)
 	{
+		case GET_ALL_MONITORS:
+		#if DEBUG
+			eMSSerial.println(F("Get All Monitors"));
+		#endif
+			returnStatus = getAllMonitors();
+			break;
+
 		case GET_RCTIME:
 		#if DEBUG
 			eMSSerial.println(F("Get RCTime"));
@@ -2282,6 +2740,13 @@ boolean executeOperation(byte operationRequested)
 			eMSSerial.println(F("Get RC35 Heating Circuit 2"));
 		#endif
 			returnStatus = getRC35MonitorHeatingCircuit(2);
+			break;
+
+		case GET_GENERAL_MONITOR:
+		#if DEBUG
+			eMSSerial.println(F("Get General Monitor"));
+		#endif
+			returnStatus = getGeneralMonitor(false);
 			break;
 
 		case GET_CALDUINO_BASIC:
@@ -2480,10 +2945,8 @@ void loop()
 	#endif
 	}
 
-	wifly.forceClose();
-	
+	wifly.forceClose();	
 	checkWiFlyTimeout();
-
 	delay(MAIN_LOOP_WAIT_TIME);
 
 }
