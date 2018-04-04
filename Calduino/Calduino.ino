@@ -122,7 +122,9 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define SUMMER_TIMEZONE 22
 #define SUMMER_TIME 1
 #define MAX_WW_TEMPERATURE 80
-#define MAX_TEMPERATURE 40
+#define MIN_WW_TEMPERATURE 30
+#define MAX_TEMPERATURE 29
+#define MIN_TEMPERATURE 6
 #define WW_ONETIME_ON  35
 #define WW_ONETIME_OFF 3
 #define SWITCHING_POINTS 42
@@ -1792,7 +1794,6 @@ sendXML:
 		wifly.sendWiflyXML(F("HC2SumMod"), hCSumMod[1]);
 		wifly.sendWiflyXML(F("HC1Prog1"), hcProgram[0]);
 		wifly.sendWiflyXML(F("HC2Prog1"), hcProgram[1]);
-		wifly.sendWiflyXML(F("HC2SumMod"), hCSumMod[1]);
 		wifly.sendWiflyXML(F("WWSelTemp"), wWSelTemp);
 		wifly.sendWiflyXML(F("WWOneTime"), wWOneTime);
 		wifly.sendWiflyXML(F("WWWorkMod"), wWWorkMod);
@@ -2164,8 +2165,8 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	else outEMSBuffer[3] = selMode+1;
 
 	// fifth position is the data to send
-	if(selTmp > MAX_TEMPERATURE*2) goto sendXML;
-	else outEMSBuffer[4] = selTmp;
+	if((selTmp < (MAX_TEMPERATURE * 2)) && (selTmp > (MIN_TEMPERATURE * 2))) outEMSBuffer[4] = selTmp;
+	else goto sendXML;
 
 	// once the buffer is loaded, send the request.
 	sendRequest(outEMSBuffer);
@@ -2319,7 +2320,7 @@ boolean setDHWTemperature(byte selTmp)
 	outEMSBuffer[3] = 2;
 
 	// fifth position is the data to send
-	if(selTmp < MAX_WW_TEMPERATURE) outEMSBuffer[4] = selTmp; 
+	if(selTmp < MAX_WW_TEMPERATURE && selTmp > MIN_WW_TEMPERATURE) outEMSBuffer[4] = selTmp; 
 	else goto sendXML;	
 
 	// once the buffer is loaded, send the request.
@@ -2718,7 +2719,7 @@ boolean setDHWWorkingMode(byte selMode)
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
 	// fourth position is the offset in the buffer. Warm Water Working Mode is position 6 - 4 = 2 and Warm Watter circulation Pump is 7 - 4 = 3
-	outEMSBuffer[3] = 0;
+	outEMSBuffer[3] = 2;
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 2;
 
