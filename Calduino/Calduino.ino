@@ -2,8 +2,10 @@
 This sketch decodes/encodes messages through EMS BUS (Buderus / Nefit Boilers)
 and sends them in XML format using a WiFly module (RN-XV  RN-171)
 
-last edit	:  07 MAY 2017
+last edit	:  09 APR 2018
 
+
+09 APR 2018 : Updated NTP Time provider and refresh frequency
 01 APR 2018 : Included operations to configure programs and set switch points
 29 MAR 2018	: Short corrections
 07 MAY 2017	: GitHub Version 1.0
@@ -61,7 +63,7 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define HTTP_BUFFER_SIZE 80
 #define EMS_MAX_READ 40
 
-#define NTP_UPDATE_TIME 30	//	NTP Refresh time in minutes
+#define NTP_UPDATE_TIME 10	//	NTP Refresh time in minutes. 0 is never, 1 is at start up
 #define IDLE_TIME 0 // Seconds to maintain the TCP connection opened
 #define MAIN_LOOP_WAIT_TIME 1000 // Arduino Loop time in seconds
 #define WIFLY_TIMEOUT 300000 // Timeout for WiFly module in milliseconds (5 min = 5 min * 60 sec/min * 1000 milliseconds/sec = 300000)
@@ -140,7 +142,7 @@ char httpBuffer[HTTP_BUFFER_SIZE];
 
 // WiFly  vars
 WiFly wifly;
-const char* nTPServer = "129.6.15.30";
+const char* nTPServer = "de.pool.ntp.org";//"129.6.15.30";
 const uint16_t nTPServerPort = 123;
 const uint16_t nTPUpdateTime = 600;
 long EMSMaxAnswerTime = 1000; // Timeout for a EMS poll/request in milliseconds
@@ -3792,14 +3794,16 @@ void loop()
 		operationRequested = readHTTPRequest();
 		operationsReceived++;
 		boolean operationReturn = executeOperation(operationRequested);
-	
+
+		// Update the RTC Time every time an HTTP operation is received
+		wifly.time();
 	#if DEBUG
 		eMSSerial.print(F("Loop: Operation returned:"));
 		eMSSerial.println(operationReturn);
 	#endif
 	}
 
-	wifly.forceClose();	
+	wifly.forceClose();
 	checkWiFlyTimeout();
 	delay(MAIN_LOOP_WAIT_TIME);
 
