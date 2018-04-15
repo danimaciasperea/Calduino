@@ -164,7 +164,7 @@ const char* nTPServer = "145.238.203.14";//"de.pool.ntp.org";//"129.6.15.30";
 const uint16_t nTPServerPort = 123;
 const uint16_t nTPUpdateTime = 600;
 long EMSMaxAnswerTime = 1000; // Timeout for a EMS poll/request in milliseconds
-uint8_t nTPTimeZone = 1;
+uint8_t nTPTimeZone = SUMMER_TIMEZONE;
 const char* mySSID = "";
 const char* myPassword = "";
 const char* myDeviceID = "Calduino";
@@ -4058,14 +4058,6 @@ boolean setupWifly()
 		}
 	}
 
-	/* Reconfiguring time problems 
-	wifly.setTimeAddress(nTPServer);
-	wifly.setTimeEnable(NTP_UPDATE_TIME);
-	//wifly.setTimePort(nTPServerPort);
-	//wifly.setTimezone(nTPTimeZone);
-	wifly.save();
-	/**/
-
 	wifly.time();
 
 	//Wait max. 100 seconds until RTC time is received. When NTP is not synchronized after 100 seconds, getRTC returns WiflyUptime
@@ -4503,8 +4495,6 @@ void loop()
 		operationsReceived++;
 		boolean operationReturn = executeOperation(operationRequested);
 
-		// Update the RTC Time every time an HTTP operation is received
-		wifly.time();
 #if DEBUG
 		eMSSerial.print(F("Loop: Operation returned:"));
 		eMSSerial.println(operationReturn);
