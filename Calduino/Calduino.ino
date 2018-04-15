@@ -2,37 +2,42 @@
 This sketch decodes/encodes messages through EMS BUS (Buderus / Nefit Boilers)
 and sends them in XML format using a WiFly module (RN-XV  RN-171)
 
-last edit	:  09 APR 2018
+last edit	:  14 APR 2018
 
-
+14 APR 2018 : Included additional get and set operations regarding Room Temp Offset, Summer/Winter Threshold, Night Setback Mode, Night Threshold Out Temperature
 09 APR 2018 : Updated NTP Time provider and refresh frequency
 01 APR 2018 : Included operations to configure programs and set switch points
 29 MAR 2018	: Short corrections
 07 MAY 2017	: GitHub Version 1.0
 01 MAY 2017 : Included tags to skip operations when an error is detected
-15 APR 2017 : Include timestamp in every XML file when the EMS operation returns correctly 
+15 APR 2017 : Include timestamp in every XML file when the EMS operation returns correctly
 14 APR 2017 : Added a timeout in EMS reader function to force the end of the function when nothing is received
 1  APR 2017 : Redefined WiFly operations
 
 author		:	dani.macias.perea@gmail.com
 
-Get RC Time				- calduino/?op=09
 Get UBA Monitor			- calduino/?op=01
 Get UBA WW Monitor		- calduino/?op=02
 Get RC35_HC1			- calduino/?op=03
 Get RC35_HC2			- calduino/?op=04
 Get General Monitor		- calduino/?op=05
 Get Program				- calduino/?op=06?pr=X the packet id of the user program to be read (0 - 0x38 - DHW, 1 - 0x39 - DHW Pump, 2 - 0x3F - HK1User1, 3 - 0x42 - HK1User2, 4 - 0x49 - HK2User1, 5 - 0x4C - HK2User2)
+Get MM10 Monitor	    - calduino/?op=07
 Get All Monitors	    - calduino/?op=08
+Get RC Time				- calduino/?op=09
 
-Set RC35 Working Mode	- calduino/?op=10?hc=X?wm=Y (hc - Heating Circuit 1 Ground Floor / Heath Circuit 2 Top Floor) (wm - Working Mode 0 = night, 1 = day, 2 = auto)
-Set RC35 Temperature	- calduino/?op=11?hc=X?wm=Y?tp=ZZ (hc - Heath Circuit 1 Ground Floor / Heath Circuit 2 Top Floor) (wm - Working Mode 0 = night, 1 = day, 2 = holiday) (tp - Temperature x 2)
+Set RC35 Working Mode	- calduino/?op=10?hc=X?wm=Y (hc - Heating Circuit 1 / Heath Circuit 2 ) (wm - Working Mode 0 = night, 1 = day, 2 = auto)
+Set RC35 Temperature	- calduino/?op=11?hc=X?wm=Y?tp=ZZ (hc - Heath Circuit 1 / Heath Circuit 2) (wm - Working Mode 0 = night, 1 = day, 2 = holiday) (tp - Temperature x 2)
 Set WW Temperature		- calduino/?op=12?tp=ZZ (tp - Temperature)
 Set WW Working Mode		- calduino/?op=13?wm=Y (wm - Working Mode 0-off, 1-on, 2-auto)
 Set WW One Time			- calduino/?op=14?wm=Y (wm - Working Mode 0-off, 1-on)
-Set RC35 Program		- calduino/?op=15?hc=X?pr=YY (hc - Heating Circuit 1 Ground Floor / Heath Circuit 2 Top Floor) (pr - Program 0x00 = User 1, 0x01 = Family, 0x02 = Morning, 0x03 = Early morning, 0x04 = Evening, 0x05 = Midmorning, 0x06 = Afternoon, 0x07 = Midday, 0x08 = Single, 0x09 = Senioren, 0x0A User2)
+Set RC35 Program		- calduino/?op=15?hc=X?pr=YY (hc - Heating Circuit 1 / Heath Circuit 2 ) (pr - Program 0x00 = User 1, 0x01 = Family, 0x02 = Morning, 0x03 = Early morning, 0x04 = Evening, 0x05 = Midmorning, 0x06 = Afternoon, 0x07 = Midday, 0x08 = Single, 0x09 = Senioren, 0x0A User2)
 Set WW Program			- calduino/?op=16?pr=YYY (0 = like the heating circuit, 255 = own program)
 Set Switch Point		- calduino/?op=17?pr=Y?sp=XX?on=Z?d=D?h=HH?m=MM Y - the packet id of the user program to be read (0 - 0x38 - DHW, 1 - 0x39 - DHW Pump, 2 - 0x3F - HK1User1, 3 - 0x42 - HK1User2, 4 - 0x49 - HK2User1, 5 - 0x4C - HK2User2); sp= 0 to 41; op = 0 off, 1 = on, 7 = undef; d = day 0=monday,...,6=sunday
+Set RC35 S/W Threshold  - calduino/?op=18?hc=X?tp=XX (hc - Heating Circuit 1 / Heath Circuit 2 ) (tp - Temperature)
+Set RC35 Night Setback  - calduino/?op=19?hc=X?wm=X ((hc - Heating Circuit 1 / Heath Circuit 2 ) wm - Working Mode 0 - Shutdown, 1 - Reduced Operation, 2 - Room Setback, 3 - Outdoor Setback)
+Set RC35 Out Night T Thr- calduino/?op=26?hc=X?tp=(X)XX (hc - Heating Circuit 1 / Heath Circuit 2 ) (tp - Temperature)
+Set RC35 Room Temp Off  - calduino/?op=27?hc=Xtp=(X)XX (hc - Heating Circuit 1 / Heath Circuit 2 ) (tp - Temperature from 10 to 0 (5*2) signed)
 
 Reboot Calduino			- calduino/?op=20
 Reconfigure Calduino	- calduino/?op=21?tz=X (tz - Time Zone - 1=Summer / 0=Winter)
@@ -53,8 +58,8 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 
 #pragma region defines
 
-#undef DEBUG 1
-//#define DEBUG 1 // When enabled Arduino sends the decoded values over the Serial port (eMSSerial) 
+//#undef DEBUG 1
+#define DEBUG 1 // When enabled Arduino sends the decoded values over the Serial port (eMSSerial) 
 
 #define RESET_PIN 40 // Pin to reset the WiFly module
 
@@ -63,7 +68,7 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define HTTP_BUFFER_SIZE 80
 #define EMS_MAX_READ 40
 
-#define NTP_UPDATE_TIME 10	//	NTP Refresh time in minutes. 0 is never, 1 is at start up
+#define NTP_UPDATE_TIME 1	//	NTP Refresh time in minutes. 0 is never, 1 is at start up
 #define IDLE_TIME 0 // Seconds to maintain the TCP connection opened
 #define MAIN_LOOP_WAIT_TIME 1000 // Arduino Loop time in seconds
 #define WIFLY_TIMEOUT 300000 // Timeout for WiFly module in milliseconds (5 min = 5 min * 60 sec/min * 1000 milliseconds/sec = 300000)
@@ -77,7 +82,8 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 
 #define PC_ID 0x0B
 #define RC35_ID 0x10
-#define MC10_ID 0x08
+#define UBA_ID 0x08
+#define MM10_ID 0x21
 #define RCTIME 0x06
 #define UBA_WORKING_HOURS 0x14
 #define UBA_MONITOR_FAST 0x18
@@ -96,6 +102,7 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define RC35_WORKINGMODE_HC2 0x47
 #define RC35_PROGRAM1_HC2 0x49
 #define RC35_PROGRAM2_HC2 0x4C
+#define MM10_MONITOR 0xAB
 
 #define GET_UBA_MONITOR 1
 #define GET_UBA_MONITOR_WW 2
@@ -103,6 +110,7 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define GET_RC35_MONITOR_HC2 4
 #define GET_GENERAL_MONITOR 5
 #define GET_PROGRAM 6
+#define GET_MM10_MONITOR 7
 #define GET_ALL_MONITORS 8
 #define GET_RCTIME 9
 #define SET_RC35_WORKING_MODE 10
@@ -113,6 +121,8 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define SET_RC35_PROGRAM 15
 #define SET_WW_PROGRAM 16
 #define SET_SWITCH_POINT 17
+#define SET_SW_THRESHOLD_TEMP 18
+#define SET_NIGHT_SETBACK_MODE 19
 #define EMS_OPERATIONS 20
 #define REBOOT_CALDUINO 20
 #define RECONFIGURE_CALDUINO 21
@@ -120,6 +130,8 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define GET_CALDUINO_FULL 23
 #define RESET_CALDUINO_STATS 24
 #define SET_EMS_TIMEOUT 25
+#define SET_NIGHT_THRESHOLD_OUTTEMP 26
+#define SET_ROOM_TEMPERATURE_OFFSET 27
 #define WINTER_TIMEZONE 23
 #define SUMMER_TIMEZONE 22
 #define SUMMER_TIME 1
@@ -127,6 +139,12 @@ Set EMS timeout			- calduino/?op=25?to=XX (XX is milliseconds/100) 11 = 1100 mil
 #define MIN_WW_TEMPERATURE 30
 #define MAX_TEMPERATURE 29
 #define MIN_TEMPERATURE 6
+#define MAX_ROOM_TEMPERATURE_OFFSET 5
+#define MIN_ROOM_TEMPERATURE_OFFSET -5
+#define MAX_SUMMER_WINTER_THRESHOLD 30
+#define MIN_SUMMER_WINTER_THRESHOLD 10
+#define MAX_OUT_NIGHT_THRESHOLD 10
+#define MIN_OUT_NIGHT_THRESHOLD -20
 #define WW_ONETIME_ON  35
 #define WW_ONETIME_OFF 3
 #define SWITCHING_POINTS 42
@@ -142,7 +160,7 @@ char httpBuffer[HTTP_BUFFER_SIZE];
 
 // WiFly  vars
 WiFly wifly;
-const char* nTPServer = "de.pool.ntp.org";//"129.6.15.30";
+const char* nTPServer = "145.238.203.14";//"de.pool.ntp.org";//"129.6.15.30";
 const uint16_t nTPServerPort = 123;
 const uint16_t nTPUpdateTime = 600;
 long EMSMaxAnswerTime = 1000; // Timeout for a EMS poll/request in milliseconds
@@ -164,7 +182,7 @@ int operationsNOK = 0;
 long timeout;
 boolean returnStatus;
 
-// UBAMonitor Variables
+// UBA Monitor Variables
 char bufferFloat[4];
 byte selImpTemp;
 float curImpTemp;
@@ -189,7 +207,7 @@ unsigned long burnWorkMin;
 unsigned long heatWorkMin;
 unsigned long uBAWorkMin;
 
-// UBAMonitorWW Variables
+// UBA Monitor WW Variables
 float wWCurTmp;
 unsigned long wWWorkM;
 unsigned long wWStarts;
@@ -200,7 +218,7 @@ uint8_t wWPumpWorkMod;
 uint8_t wWProgram;
 uint8_t wWPumpProgram;
 
-// RCMonitor Variables
+// RC35 Monitor Variables
 float hCSelTemp[2];
 boolean hCDayMod[2];
 boolean hCSumMod[2];
@@ -209,8 +227,17 @@ char xmlTag[20];
 //RC35 Working Mode Variables
 float hCSelNightTemp[2];
 float hCSelDayTemp[2];
+float hCRoomTempOff[2];
 byte hCWorkMod[2];
-uint8_t hcProgram[2];
+uint8_t hCProgram[2];
+uint8_t hCSWThresTemp[2];
+uint8_t hCNightSetback[2];
+int8_t hCNightOutTemp[2];
+
+//MM10 Monitor Variables
+byte selImpMixerTemp;
+float curImpMixerTemp;
+byte mixerStatus;
 
 #pragma endregion variables
 
@@ -220,17 +247,17 @@ uint8_t hcProgram[2];
 Calculate the CRC code of the buffer passed as parameter.
 
 @buffer buffer for which the CRC is calculated.
-@len length of the buffer. 
+@len length of the buffer.
 @return CRC code.
 */
 uint8_t crcCalculator(char * buffer, int len)
 {
 	uint8_t i, crc = 0x0;
 	uint8_t d;
-	for(i = 0; i < len - 2; i++)
+	for (i = 0; i < len - 2; i++)
 	{
 		d = 0;
-		if(crc & 0x80)
+		if (crc & 0x80)
 		{
 			crc ^= 12;
 			d = 1;
@@ -244,7 +271,7 @@ uint8_t crcCalculator(char * buffer, int len)
 
 /**
 Check if the CRC code calculated for the buffer corresponds with the
-CRC value received in the buffer (second to last position). 
+CRC value received in the buffer (second to last position).
 
 @buffer buffer for which the CRC is calculated.
 @len length of the buffer.
@@ -269,12 +296,12 @@ int readBytes(char * inEMSBuffer)
 	int ptr = 0;
 
 	// while there is available data
-	while(eMSSerial3.available())
+	while (eMSSerial3.available())
 	{
 
-		if((long)millis() > EMSTimeout) break;
+		if ((long)millis() > EMSTimeout) break;
 		// if the first byte to be read is 0x00
-		if((uint8_t)eMSSerial3.peek() == 0)
+		if ((uint8_t)eMSSerial3.peek() == 0)
 		{
 			// skip zero's
 			uint8_t temp = eMSSerial3.read();
@@ -285,12 +312,12 @@ int readBytes(char * inEMSBuffer)
 			break;
 		}
 	}
-	
+
 	// read data until frame-error, max bytes are read or timeout
-	while((!eMSSerial3.frameError()) && ptr < (EMS_MAX_READ))
+	while ((!eMSSerial3.frameError()) && ptr < (EMS_MAX_READ))
 	{
-		if((long)millis() > EMSTimeout) break;
-		if(eMSSerial3.available())
+		if ((long)millis() > EMSTimeout) break;
+		if (eMSSerial3.available())
 		{
 			// store the information in buffer and update the number of bytes read
 			inEMSBuffer[ptr] = eMSSerial3.read();
@@ -312,7 +339,7 @@ Send a data frame to the EMS BUS.
 void sendBuffer(char * outEMSBuffer, int len)
 {
 	char j;
-	for(j = 0; j < len - 1; j++)
+	for (j = 0; j < len - 1; j++)
 	{
 		eMSSerial3.write(outEMSBuffer[j]);
 		delay(3);
@@ -343,7 +370,7 @@ If the connection with the EMS Buffer is not working it will timeout.
 */
 boolean sendRequest(char *outEMSBuffer)
 {
-	
+
 	// calculate the CRC value in the sixth position of the outEMSBuffer
 	outEMSBuffer[5] = crcCalculator(outEMSBuffer, 7);
 	// wait until the polled address is our address (0x0B)
@@ -352,12 +379,12 @@ boolean sendRequest(char *outEMSBuffer)
 	// watchdog (maximum polling waiting time)
 	EMSTimeout = (long)millis() + EMSMaxAnswerTime * 4;
 
-	while((pollAddress & 0x7F) != PC_ID)
+	while ((pollAddress & 0x7F) != PC_ID)
 	{
-		if((long)millis() > EMSTimeout) return false;
+		if ((long)millis() > EMSTimeout) return false;
 
 		int ptr = readBytes(inEMSBuffer);
-		if(ptr == 2)
+		if (ptr == 2)
 		{
 			pollAddress = inEMSBuffer[0];
 		}
@@ -367,7 +394,7 @@ boolean sendRequest(char *outEMSBuffer)
 	delay(2);
 	sendBuffer(outEMSBuffer, 7);
 	return true;
-	
+
 }
 
 #pragma endregion EMSOperations
@@ -382,44 +409,44 @@ void initialiceEMS()
 {
 
 	boolean getRCTimeVar = false;
-	while(!getRCTimeVar)
+	while (!getRCTimeVar)
 	{
 		delay(MAIN_LOOP_WAIT_TIME);
 		getRCTimeVar = getRCTime();
 	}
 
 	boolean getUBAMonitorVar = false;
-	while(!getUBAMonitorVar)
+	while (!getUBAMonitorVar)
 	{
 		delay(MAIN_LOOP_WAIT_TIME);
 		getUBAMonitorVar = getUBAMonitor();
 	}
 
 	boolean getUBAMonitorWarmWaterVar = false;
-	while(!getUBAMonitorWarmWaterVar)
+	while (!getUBAMonitorWarmWaterVar)
 	{
 		delay(MAIN_LOOP_WAIT_TIME);
 		getUBAMonitorWarmWaterVar = getUBAMonitorWarmWater();
 	}
 
 	boolean getRC35MonitorHeatingCircuit1Var = false;
-	while(!getRC35MonitorHeatingCircuit1Var)
+	while (!getRC35MonitorHeatingCircuit1Var)
 	{
 		delay(MAIN_LOOP_WAIT_TIME);
-		getRC35MonitorHeatingCircuit1Var = getRC35MonitorHeatingCircuit(1);
+		getRC35MonitorHeatingCircuit1Var = getRC35MonitorHC(1);
 	}
 
 	boolean getRC35MonitorHeatingCircuit2Var = false;
-	while(!getRC35MonitorHeatingCircuit2Var)
+	while (!getRC35MonitorHeatingCircuit2Var)
 	{
 		delay(MAIN_LOOP_WAIT_TIME);
-		getRC35MonitorHeatingCircuit2Var = getRC35MonitorHeatingCircuit(2);
+		getRC35MonitorHeatingCircuit2Var = getRC35MonitorHC(2);
 	}
 
 }
 
 /**
-Send a request to EMS to read a program (switch points) in the boiler and send the answer in XML format via WiFly module. 
+Send a request to EMS to read a program (switch points) in the boiler and send the answer in XML format via WiFly module.
 Due to reception problems in datagram greater than 40 bytes, the read is splited in blocks of 14 bytes
 @selProgram the packet id of the user program to be read (0 - 0x38 - DHW, 1 - 0x39 - DHW Pump, 2 - 0x3F - HK1User1, 3 - 0x42 - HK1User2, 4 - 0x49 - HK2User1, 5 - 0x4C - HK2User2)
 @return whether the operation has been correctly executed or not.
@@ -432,26 +459,26 @@ boolean getProgramSwitchPoints(byte selProgram)
 
 	switch (selProgram)
 	{
-		case 0 :
-			selProgram = 0x38;
-			break;
-		case 1:
-			selProgram = 0x39;
-			break;
-		case 2:
-			selProgram = 0x3F;
-			break;
-		case 3:
-			selProgram = 0x42;
-			break;
-		case 4:
-			selProgram = 0x49;
-			break;
-		case 5:
-			selProgram = 0x4C;
-			break;
-		default: goto sendXML;
-			break;
+	case 0:
+		selProgram = 0x38;
+		break;
+	case 1:
+		selProgram = 0x39;
+		break;
+	case 2:
+		selProgram = 0x3F;
+		break;
+	case 3:
+		selProgram = 0x42;
+		break;
+	case 4:
+		selProgram = 0x49;
+		break;
+	case 5:
+		selProgram = 0x4C;
+		break;
+	default: goto sendXML;
+		break;
 	}
 
 	// load outEMSBuffer with corresponding values.
@@ -496,7 +523,7 @@ boolean getProgramSwitchPoints(byte selProgram)
 					// check if the operation type returned corresponds with the one requested
 					if (inEMSBuffer[2] == selProgram)
 					{
-						for (int j = 0; j < batchReadSize/2; j++)
+						for (int j = 0; j < batchReadSize / 2; j++)
 						{
 							programSwitchPoints[j + (i * batchReadSize / 2)][0] = inEMSBuffer[(j * 2) + 4];
 							programSwitchPoints[j + (i * batchReadSize / 2)][1] = inEMSBuffer[(j * 2) + 4 + 1];
@@ -515,7 +542,7 @@ boolean getProgramSwitchPoints(byte selProgram)
 				}
 			}
 		}
-	}	
+	}
 
 sendXML:
 	wifly.sendWifly(F("<GetProgram>"));
@@ -532,14 +559,14 @@ sendXML:
 			eMSSerial.print(F("Day: ")); eMSSerial.println((programSwitchPoints[k][0] >> 5), DEC);
 			eMSSerial.print(F("Hour: ")); eMSSerial.println((int)(programSwitchPoints[k][1] / 6), DEC);
 			eMSSerial.print(F("Minute: ")); eMSSerial.println((int)((programSwitchPoints[k][1] % 6) * 10), DEC);
-			eMSSerial.print(F("Action: ")); eMSSerial.println((programSwitchPoints[k][0] & 7), DEC);			
+			eMSSerial.print(F("Action: ")); eMSSerial.println((programSwitchPoints[k][0] & 7), DEC);
 #endif	
 			wifly.sendWifly(F("<SwitchPoint>"));
 			wifly.sendWiflyXML(F("ID"), k);
-			wifly.sendWiflyXML(F("Day"), (byte) (programSwitchPoints[k][0] >> 5));
-			wifly.sendWiflyXML(F("Hour"), (byte) (programSwitchPoints[k][1] / 6));
-			wifly.sendWiflyXML(F("Minute"), (byte) ((programSwitchPoints[k][1] % 6) * 10));
-			wifly.sendWiflyXML(F("Action"), (byte) (programSwitchPoints[k][0] & 7));
+			wifly.sendWiflyXML(F("Day"), (byte)(programSwitchPoints[k][0] >> 5));
+			wifly.sendWiflyXML(F("Hour"), (byte)(programSwitchPoints[k][1] / 6));
+			wifly.sendWiflyXML(F("Minute"), (byte)((programSwitchPoints[k][1] % 6) * 10));
+			wifly.sendWiflyXML(F("Action"), (byte)(programSwitchPoints[k][0] & 7));
 			wifly.sendWifly(F("</SwitchPoint>"));
 		}
 		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
@@ -589,22 +616,22 @@ boolean getRCTime()
 	long timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == RCTIME)
+				if (inEMSBuffer[2] == RCTIME)
 				{
 					year = inEMSBuffer[4];
 					month = inEMSBuffer[5];
@@ -621,7 +648,7 @@ boolean getRCTime()
 
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 	wifly.sendWifly(F("<RCTime>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("Year"), year);
@@ -650,7 +677,7 @@ boolean getRCTime()
 	return returnStatus;
 }
 
-/** 
+/**
 Send several EMS request to get all the available data and send the answer in XML format via WiFly module
 
 @return whether the operation has been correctly executed or not.
@@ -661,8 +688,9 @@ boolean getAllMonitors()
 	wifly.sendWifly(F("<AllMonitors>"));
 	returnStatus = getUBAMonitor();
 	returnStatus &= getUBAMonitorWarmWater();
-	returnStatus &= getRC35MonitorHeatingCircuit(1);
-	returnStatus &= getRC35MonitorHeatingCircuit(2);
+	returnStatus &= getRC35MonitorHC(1);
+	returnStatus &= getRC35MonitorHC(2);
+	returnStatus &= getMM10Monitor();
 	returnStatus &= getGeneralMonitor(true);
 	returnStatus &= getCalduinoStats(1);
 	wifly.sendWifly(F("</AllMonitors>"));
@@ -682,7 +710,7 @@ boolean getUBAMonitor()
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_FAST;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -697,22 +725,22 @@ boolean getUBAMonitor()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_FAST)
+				if (inEMSBuffer[2] == UBA_MONITOR_FAST)
 				{
 					selImpTemp = (uint8_t)inEMSBuffer[4];
 					curImpTemp = ((float)((((uint8_t)inEMSBuffer[5] << 8) + (uint8_t)inEMSBuffer[6]))) / 10;
@@ -750,7 +778,7 @@ boolean getUBAMonitor()
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_SLOW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -765,22 +793,22 @@ boolean getUBAMonitor()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_SLOW)
+				if (inEMSBuffer[2] == UBA_MONITOR_SLOW)
 				{
 					extTemp = ((float)((((uint8_t)inEMSBuffer[4] << 8) + (uint8_t)inEMSBuffer[5]))) / 10;
 					boilTemp = ((float)((((uint8_t)inEMSBuffer[6] << 8) + (uint8_t)inEMSBuffer[7]))) / 10;
@@ -788,7 +816,7 @@ boolean getUBAMonitor()
 					burnStarts = (((unsigned long)(uint8_t)inEMSBuffer[14]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[15]) << 8) + ((uint8_t)inEMSBuffer[16]);
 					burnWorkMin = (((unsigned long)(uint8_t)inEMSBuffer[17]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[18]) << 8) + ((uint8_t)inEMSBuffer[19]);
 					heatWorkMin = (((unsigned long)(uint8_t)inEMSBuffer[23]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[24]) << 8) + ((uint8_t)inEMSBuffer[25]);
-					
+
 					returnStatus = true;
 				}
 				else
@@ -805,7 +833,7 @@ boolean getUBAMonitor()
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKING_HOURS;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -820,22 +848,22 @@ boolean getUBAMonitor()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_WORKING_HOURS)
+				if (inEMSBuffer[2] == UBA_WORKING_HOURS)
 				{
 					uBAWorkMin = (((unsigned long)(uint8_t)inEMSBuffer[4]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[5]) << 8) + ((uint8_t)inEMSBuffer[6]);
 
@@ -852,9 +880,9 @@ boolean getUBAMonitor()
 	}
 
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
-	sendXML:
+sendXML:
 	wifly.sendWifly(F("<UBAMonitor>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("SelImpTemp"), selImpTemp); //0
@@ -911,7 +939,7 @@ boolean getUBAMonitorWarmWater()
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -926,22 +954,22 @@ boolean getUBAMonitorWarmWater()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_WW)
+				if (inEMSBuffer[2] == UBA_MONITOR_WW)
 				{
 					wWCurTmp = ((float)((((uint8_t)inEMSBuffer[5] << 8) + (uint8_t)inEMSBuffer[6]))) / 10;
 					wWStarts = (((unsigned long)(uint8_t)inEMSBuffer[17]) << 16) + (((unsigned long)(uint8_t)inEMSBuffer[18]) << 8) + ((uint8_t)inEMSBuffer[19]);
@@ -958,12 +986,12 @@ boolean getUBAMonitorWarmWater()
 			}
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -978,22 +1006,22 @@ boolean getUBAMonitorWarmWater()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_PARAMETER_WW)
+				if (inEMSBuffer[2] == UBA_PARAMETER_WW)
 				{
 					wWSelTemp = (uint8_t)inEMSBuffer[6];
 
@@ -1028,23 +1056,25 @@ boolean getUBAMonitorWarmWater()
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_WORKINGMODE_WW)
+				if (inEMSBuffer[2] == UBA_WORKINGMODE_WW)
 				{
+					wWProgram = (uint8_t)inEMSBuffer[4];
+					wWPumpProgram = (uint8_t)inEMSBuffer[5];
 					wWWorkMod = (uint8_t)inEMSBuffer[6];
 					wWPumpWorkMod = (uint8_t)inEMSBuffer[7];
 
@@ -1061,9 +1091,9 @@ boolean getUBAMonitorWarmWater()
 	}
 
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
-    sendXML:
+sendXML:
 	wifly.sendWifly(F("<UBAMonitorWW>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("WWCurTmp"), wWCurTmp);			//0
@@ -1095,27 +1125,37 @@ Send a EMS request to read RC35 Monitor Heating Circuit and send the answer in X
 @selHC the Heating Circuit for which we want to obtain the information (1 or 2)
 @return whether the operation has been correctly executed or not.
 */
-boolean getRC35MonitorHeatingCircuit(byte selHC)
+boolean getRC35MonitorHC(byte selHC)
 {
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
+
 	// second position is destinationID. Masked with 0x80 as a read command
 	outEMSBuffer[1] = RC35_ID | 0x80;
+
 	// third position is the message type. Depends on the Heat Circuit passed as parameter
-	if(selHC == 1)
+	switch (selHC)
 	{
-		outEMSBuffer[2] = RC35_MONITOR_HC1;
-		strcpy_P(xmlTag, PSTR("RCMonitorHC1"));
+		case 1:
+		{
+			outEMSBuffer[2] = RC35_MONITOR_HC1;
+			strcpy_P(xmlTag, PSTR("RCMonitorHC1"));
+			break;
+		}
+		case 2:
+		{
+			outEMSBuffer[2] = RC35_MONITOR_HC2;
+			strcpy_P(xmlTag, PSTR("RCMonitorHC2"));
+			break;
+		}
+		default:
+			goto sendXML;
 	}
-	else if(selHC == 2)
-	{
-		outEMSBuffer[2] = RC35_MONITOR_HC2;
-		strcpy_P(xmlTag, PSTR("RCMonitorHC2"));
-	}
-	else goto sendXML;
+
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
 	outEMSBuffer[3] = 0;
+
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 10;
 
@@ -1126,22 +1166,22 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
 					hCDayMod[selHC - 1] = bitRead((uint8_t)inEMSBuffer[5], 1);
@@ -1158,25 +1198,30 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 			}
 		}
 	}
+	
 
 	// load outEMSBuffer with corresponding values.
-	// first position is the transmitterID. Ox0b is the ComputerID (our address)
-	outEMSBuffer[0] = PC_ID;
-	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = RC35_ID | 0x80;
-	// third position is the message type
-	if(selHC == 1)
+
+	// third position is the message type. Depends on the Heat Circuit passed as parameter
+	switch (selHC)
 	{
-		outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+		case 1:
+		{
+			outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+			break;
+		}
+		case 2:
+		{
+			outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
+			break;
+		}
+		default:
+			goto sendXML;
 	}
-	else if(selHC == 2)
-	{
-		outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
-	}
-	else goto sendXML;
 
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
 	outEMSBuffer[3] = 0;
+
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 12;
 
@@ -1187,25 +1232,26 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelNightTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
 					hCSelDayTemp[selHC - 1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCRoomTempOff[selHC - 1] = ((float)((int8_t)inEMSBuffer[10])) / 2;
 					hCWorkMod[selHC - 1] = (uint8_t)inEMSBuffer[11];
 
 					returnStatus = true;
@@ -1220,13 +1266,118 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 		}
 	}
 	
+	// load outEMSBuffer with corresponding values.
+	
+	// fourth position is the offset in the buffer. We want to read bytes 26 to 43 (26-4 = 22)
+	outEMSBuffer[3] = 22;
 
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 30;
 
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if (eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if (ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if (crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if (inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSWThresTemp[selHC - 1] = (uint8_t)inEMSBuffer[4]; // Position 26
+					hCNightSetback[selHC - 1] = (uint8_t)inEMSBuffer[7];
+					hCNightOutTemp[selHC - 1] = (int8_t)inEMSBuffer[21];
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+	
+	// third position is the message type. Depends on the Heat Circuit passed as parameter
+	switch (selHC)
+	{
+		case 1:
+		{
+			outEMSBuffer[2] = RC35_PROGRAM1_HC1;
+			break;
+		}
+		case 2:
+		{
+			outEMSBuffer[2] = RC35_PROGRAM1_HC2;
+			break;
+		}
+		default:
+			goto sendXML;
+	}
+
+	// fourth position is the offset in the buffer. We want to read only position 88 of the buffer, so 88 - 4 = 84
+	outEMSBuffer[3] = 84;
+
+	// fifth position is the length of the data requested. We want to read only one byte
+	outEMSBuffer[4] = 1;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if (eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if (ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if (crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if (inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCProgram[selHC - 1] = (uint8_t)inEMSBuffer[4];
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+	
 
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
-    sendXML:
-	wifly.sendWiflyXMLTag(xmlTag,0);
-	if(returnStatus)
+sendXML:
+	wifly.sendWiflyXMLTag(xmlTag, 0);
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("HCSelTemp"), hCSelTemp[selHC - 1]);	//0	
@@ -1242,6 +1393,87 @@ boolean getRC35MonitorHeatingCircuit(byte selHC)
 	return returnStatus;
 }
 
+
+/**
+Send a EMS request to read MM10 Monitor and send the answer in XML format via WiFly module
+@return whether the operation has been correctly executed or not.
+*/
+boolean getMM10Monitor()
+{
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = MM10_ID | 0x80;
+
+	// third position is the message type.
+	outEMSBuffer[2] = MM10_MONITOR;
+
+	// fourth position is the offset in the buffer. We want to read all the buffer so 0
+	outEMSBuffer[3] = 0;
+
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 4;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if (eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if (ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if (crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if (inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					selImpMixerTemp = (uint8_t)inEMSBuffer[4];
+					curImpMixerTemp = ((float)((((uint8_t)inEMSBuffer[5] << 8) + (uint8_t)inEMSBuffer[6]))) / 10;
+					mixerStatus = (uint8_t)inEMSBuffer[7];
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+sendXML:
+	wifly.sendWifly(F("<MM10Monitor>"));
+	if (returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("SelImpMixerTemp"), selImpMixerTemp);    //0 
+		wifly.sendWiflyXML(F("CurImpMixerTemp"), curImpMixerTemp);    //1
+		wifly.sendWiflyXML(F("MixerStatus"), mixerStatus);//2
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWifly(F("</MM10Monitor>"));
+}
+
+
 /**
 Send a number of EMS requests to read all the parameters that can be changed using Calduino
 @onlyPrint whether if the variables should be updated (sending EMS commands) or only printed
@@ -1249,13 +1481,14 @@ Send a number of EMS requests to read all the parameters that can be changed usi
 */
 boolean getGeneralMonitor(boolean onlyPrint)
 {
-	if(onlyPrint) goto sendXML;
+	returnStatus = onlyPrint;
+	if (onlyPrint) goto sendXML;
 
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_FAST;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -1270,22 +1503,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_FAST)
+				if (inEMSBuffer[2] == UBA_MONITOR_FAST)
 				{
 					byte auxiliarVariable = inEMSBuffer[11];
 					burnGas = bitRead(auxiliarVariable, 0);
@@ -1310,7 +1543,6 @@ boolean getGeneralMonitor(boolean onlyPrint)
 		}
 	}
 
-
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -1330,27 +1562,79 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelNightTemp[0] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
 					hCSelDayTemp[0] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCRoomTempOff[0] = ((float)((int8_t)inEMSBuffer[10])) / 2;
 					hCWorkMod[0] = (uint8_t)inEMSBuffer[11];
 
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+	// fourth position is the offset in the buffer. We want to read bytes 26 to 43 (26-4 = 22)
+	outEMSBuffer[3] = 22;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 20;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if (eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if (ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if (crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if (inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSWThresTemp[0] = (uint8_t)inEMSBuffer[4];
+					hCNightSetback[0] = (uint8_t)inEMSBuffer[7];
+					hCNightOutTemp[0] = (int8_t)inEMSBuffer[21];
 					returnStatus = true;
 				}
 				else
@@ -1382,27 +1666,79 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelNightTemp[1] = ((float)((uint8_t)inEMSBuffer[5])) / 2;
 					hCSelDayTemp[1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
+					hCRoomTempOff[1] = ((float)((int8_t)inEMSBuffer[10])) / 2;
 					hCWorkMod[1] = (uint8_t)inEMSBuffer[11];
 
+					returnStatus = true;
+				}
+				else
+				{
+					// stop the operation in order to save time
+					returnStatus = false;
+					goto sendXML;
+				}
+			}
+		}
+	}
+
+	// load outEMSBuffer with corresponding values.
+	// first position is the transmitterID. Ox0b is the ComputerID (our address)
+	outEMSBuffer[0] = PC_ID;
+	// second position is destinationID. Masked with 0x80 as a read command
+	outEMSBuffer[1] = RC35_ID | 0x80;
+	// third position is the message type
+	outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
+	// fourth position is the offset in the buffer. We want to read bytes 26 to 43 (26-4 = 22)
+	outEMSBuffer[3] = 22;
+	// fifth position is the length of the data requested.
+	outEMSBuffer[4] = 20;
+
+	// once the buffer is loaded, send the request.
+	sendRequest(outEMSBuffer);
+
+	// check if the requested query is answered in the next EMSMaxAnswerTime milliseconds
+	timeout = (long)millis() + EMSMaxAnswerTime;
+
+	// wait until timeout or some new data in the EMS-Bus
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+
+	// if there is data to be read
+	if (eMSSerial3.available())
+	{
+		// read the information sent
+		int ptr = readBytes(inEMSBuffer);
+
+		// if more than 4 bytes are read (datagram received)
+		if (ptr > 4)
+		{
+			// check if the CRC of the information received is correct
+			if (crcCheckOK(inEMSBuffer, ptr))
+			{
+				// check if the operation type returned corresponds with the one requested
+				if (inEMSBuffer[2] == outEMSBuffer[2])
+				{
+					hCSWThresTemp[1] = (uint8_t)inEMSBuffer[4];
+					hCNightSetback[1] = (uint8_t)inEMSBuffer[7];
+					hCNightOutTemp[1] = (int8_t)inEMSBuffer[21];
 					returnStatus = true;
 				}
 				else
@@ -1434,22 +1770,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelTemp[0] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
 					hCSumMod[0] = bitRead((uint8_t)inEMSBuffer[5], 0);
@@ -1486,22 +1822,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelTemp[1] = ((float)((uint8_t)inEMSBuffer[6])) / 2;
 					hCSumMod[1] = bitRead((uint8_t)inEMSBuffer[5], 0);
@@ -1523,7 +1859,7 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -1538,22 +1874,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_WW)
+				if (inEMSBuffer[2] == UBA_MONITOR_WW)
 				{
 					wWOneTime = bitRead((uint8_t)inEMSBuffer[9], 1);
 					returnStatus = true;
@@ -1572,7 +1908,7 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -1587,22 +1923,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_PARAMETER_WW)
+				if (inEMSBuffer[2] == UBA_PARAMETER_WW)
 				{
 					wWSelTemp = (uint8_t)inEMSBuffer[6];
 					returnStatus = true;
@@ -1636,22 +1972,22 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_WORKINGMODE_WW)
+				if (inEMSBuffer[2] == UBA_WORKINGMODE_WW)
 				{
 					wWProgram = (uint8_t)inEMSBuffer[4];
 					wWPumpProgram = (uint8_t)inEMSBuffer[5];
@@ -1668,7 +2004,7 @@ boolean getGeneralMonitor(boolean onlyPrint)
 				}
 			}
 		}
-	}	
+	}
 
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
@@ -1710,7 +2046,7 @@ boolean getGeneralMonitor(boolean onlyPrint)
 				// check if the operation type returned corresponds with the one requested
 				if (inEMSBuffer[2] == RC35_PROGRAM1_HC1)
 				{
-					hcProgram[0] = (uint8_t)inEMSBuffer[4];
+					hCProgram[0] = (uint8_t)inEMSBuffer[4];
 					returnStatus = true;
 				}
 				else
@@ -1763,7 +2099,7 @@ boolean getGeneralMonitor(boolean onlyPrint)
 				// check if the operation type returned corresponds with the one requested
 				if (inEMSBuffer[2] == RC35_PROGRAM1_HC2)
 				{
-					hcProgram[1] = (uint8_t)inEMSBuffer[4];
+					hCProgram[1] = (uint8_t)inEMSBuffer[4];
 					returnStatus = true;
 				}
 				else
@@ -1779,13 +2115,15 @@ boolean getGeneralMonitor(boolean onlyPrint)
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWifly(F("<GeneralMonitor>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("HC1SelDayTemp"), hCSelDayTemp[0]);    //0 
 		wifly.sendWiflyXML(F("HC2SelDayTemp"), hCSelDayTemp[1]);    //1
 		wifly.sendWiflyXML(F("HC1SelNightTemp"), hCSelNightTemp[0]);//2
-		wifly.sendWiflyXML(F("HC2SelNightTemp"), hCSelNightTemp[1]);//3
+		wifly.sendWiflyXML(F("HC2SelNightTemp"), hCSelNightTemp[1]);//3		
+		wifly.sendWiflyXML(F("HC1RoomTempOff"), hCRoomTempOff[0]);//4
+		wifly.sendWiflyXML(F("HC2RoomTempOff"), hCRoomTempOff[1]);//5
 		wifly.sendWiflyXML(F("HC1SelTemp"), hCSelTemp[0]);
 		wifly.sendWiflyXML(F("HC2SelTemp"), hCSelTemp[1]);
 		wifly.sendWiflyXML(F("HC1WorkMod"), hCWorkMod[0]);
@@ -1794,8 +2132,14 @@ sendXML:
 		wifly.sendWiflyXML(F("HC2DayMod"), hCDayMod[1]);
 		wifly.sendWiflyXML(F("HC1SumMod"), hCSumMod[0]);
 		wifly.sendWiflyXML(F("HC2SumMod"), hCSumMod[1]);
-		wifly.sendWiflyXML(F("HC1Prog1"), hcProgram[0]);
-		wifly.sendWiflyXML(F("HC2Prog1"), hcProgram[1]);
+		wifly.sendWiflyXML(F("HC1SWThresTemp"), hCSWThresTemp[0]);
+		wifly.sendWiflyXML(F("HC2SWThresTemp"), hCSWThresTemp[1]);
+		wifly.sendWiflyXML(F("HC1NightSetback"), hCNightSetback[0]);
+		wifly.sendWiflyXML(F("HC2NightSetback"), hCNightSetback[1]);
+		wifly.sendWiflyXML(F("HC1NightOutTemp"), hCNightOutTemp[0]);
+		wifly.sendWiflyXML(F("HC2NightOutTemp"), hCNightOutTemp[1]);
+		wifly.sendWiflyXML(F("HC1Prog1"), hCProgram[0]);
+		wifly.sendWiflyXML(F("HC2Prog1"), hCProgram[1]);
 		wifly.sendWiflyXML(F("WWSelTemp"), wWSelTemp);
 		wifly.sendWiflyXML(F("WWOneTime"), wWOneTime);
 		wifly.sendWiflyXML(F("WWWorkMod"), wWWorkMod);
@@ -1823,7 +2167,7 @@ sendXML:
 
 
 /**
-Send a EMS command to set the selected RC35 Heating Circuit to the desired Program
+Send an EMS command to set the selected RC35 Heating Circuit to the desired Program
 @selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
 @selProgram the working program we want to configure (0x00 = User 1, 0x01 = Family, 0x02 = Morning, 0x03 = Early morning, 0x04 = Evening, 0x05 = Midmorning, 0x06 = Afternoon, 0x07 = Midday, 0x08 = Single, 0x09 = Senioren, 0x0A User2)
 @return whether the operation has been correctly executed or not.
@@ -1897,9 +2241,27 @@ boolean setRC35Program(byte selHC, byte selProgram)
 	// second position is destinationID. Masked with 0x80 as a read command.
 	outEMSBuffer[1] = RC35_ID | 0x80;
 
-	// third position is the message type
-	if (selHC == 1) outEMSBuffer[2] = RC35_PROGRAM1_HC1;
-	else outEMSBuffer[2] = RC35_PROGRAM1_HC2;
+	// third position is the message type	
+	switch (selHC)
+	{
+		case 1:
+		{
+			outEMSBuffer[2] = RC35_PROGRAM1_HC1;
+			break;
+		}
+
+		case 2:
+		{
+			outEMSBuffer[2] = RC35_PROGRAM1_HC2;
+			break;
+		}
+
+		default:
+		{
+			goto sendXML;
+		}
+	}
+
 
 	// fourth position is the offset in the buffer. We want to read only position 88 of the buffer, so 88 - 4 = 84
 	outEMSBuffer[3] = 84;
@@ -1931,10 +2293,10 @@ boolean setRC35Program(byte selHC, byte selProgram)
 				// check if the operation type returned corresponds with the one requested
 				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
-					hcProgram[selHC - 1] = (uint8_t)inEMSBuffer[4];
-					
+					hCProgram[selHC - 1] = (uint8_t)inEMSBuffer[4];
+
 					// check if the working mode has been effectively performed
-					if (hcProgram[selHC - 1] == selProgram)
+					if (hCProgram[selHC - 1] == selProgram)
 					{
 						returnStatus = true;
 					}
@@ -1957,7 +2319,7 @@ sendXML:
 	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
-		wifly.sendWiflyXML(F("HCProgram"), hcProgram[selHC - 1]);
+		wifly.sendWiflyXML(F("HCProgram"), hCProgram[selHC - 1]);
 		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
 	}
 	else
@@ -1975,7 +2337,7 @@ sendXML:
 }
 
 /**
-Send a EMS command to set the selected RC35 Heating Circuit to the desired Mode
+Send an EMS command to set the selected RC35 Heating Circuit to the desired Mode
 @selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
 @selMode the working mode we want to configure (0-night, 1-day, 2-auto)
 @return whether the operation has been correctly executed or not.
@@ -1995,23 +2357,34 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	// second position is destinationID. No Masked with 0x80!
 	outEMSBuffer[1] = RC35_ID;
 
-	// third position is the message type
-	if(selHC == 1)
+	// third position is the message type	
+	switch (selHC)
+	{
+	case 1:
 	{
 		outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 		strcpy_P(xmlTag, PSTR("SetRCHC1WorkingMode"));
+		break;
 	}
-	else if(selHC == 2)
+
+	case 2:
 	{
 		outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 		strcpy_P(xmlTag, PSTR("SetRCHC2WorkingMode"));
+		break;
 	}
-	else goto sendXML;
+
+	default:
+	{
+		goto sendXML;
+	}
+	}
+
 	// fourth position is the offset in the buffer. Working mode is at position 11, so 11-4=7
 	outEMSBuffer[3] = 0x07;
 
 	// fifth position is the data to send
-	if(selMode > 2 || selMode < 0) goto sendXML;
+	if (selMode > 2 || selMode < 0) goto sendXML;
 	else outEMSBuffer[4] = selMode;
 
 	// once the buffer is loaded, send the request.
@@ -2021,16 +2394,16 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
@@ -2041,7 +2414,7 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 			goto sendXML;
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -2050,7 +2423,7 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	outEMSBuffer[1] = RC35_ID | 0x80;
 
 	// third position is the message type
-	if(selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+	if (selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 	else outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 
 	// fourth position is the offset in the buffer. We want to read all the buffer so 0
@@ -2066,27 +2439,27 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCWorkMod[selHC - 1] = (uint8_t)inEMSBuffer[11];
 
 					// check if the working mode has been effectively performed
-					if(hCWorkMod[selHC - 1] == selMode)
+					if (hCWorkMod[selHC - 1] == selMode)
 					{
 						returnStatus = true;
 					}
@@ -2104,9 +2477,9 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 	}
 
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
-    sendXML:
+sendXML:
 	wifly.sendWiflyXMLTag(xmlTag, 0);
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("HCWorkMod"), hCWorkMod[selHC - 1]);
@@ -2127,7 +2500,7 @@ boolean setRC35WorkingMode(byte selHC, byte selMode)
 }
 
 /**
-Send a EMS command to set the selected RC35 Heating Circuit to the desired Temperature in the selected Mode
+Send an EMS command to set the selected RC35 Heating Circuit to the desired Temperature in the selected Mode
 @selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
 @selMode the working mode we want to configure (0-night, 1-day, 2-holidays)
 @selTmp the desired temperature to be configured in the selMode (multiplied by two)
@@ -2139,7 +2512,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	float hCSelModTemp;
 	char xmlTag[20];
 	char xmlTag1[20];
-	long timeout;
+	timeout;
 	boolean returnStatus = false;
 
 	// load outEMSBuffer with corresponding values
@@ -2149,25 +2522,36 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	// second position is destinationID.
 	outEMSBuffer[1] = RC35_ID;
 
-	// third position is the message type
-	if(selHC == 1)
+	// third position is the message type	
+	switch (selHC)
+	{
+	case 1:
 	{
 		outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 		strcpy_P(xmlTag, PSTR("SetRCHC1Temperature"));
+		break;
 	}
-	else if(selHC == 2)
+
+	case 2:
 	{
 		outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 		strcpy_P(xmlTag, PSTR("SetRCHC2Temperature"));
+		break;
 	}
-	else goto sendXML;
+
+	default:
+	{
+		goto sendXML;
+	}
+	}
+
 
 	// fourth position is the offset in the buffer. Night is byte 5 (Offset=5-4=1), Day is byte 6 (Offset=2), Holidays is byte 7 (Offset=3)
-	if(selMode > 2 || selMode < 0) goto sendXML;
-	else outEMSBuffer[3] = selMode+1;
+	if (selMode > 2 || selMode < 0) goto sendXML;
+	else outEMSBuffer[3] = selMode + 1;
 
 	// fifth position is the data to send
-	if((selTmp < (MAX_TEMPERATURE * 2)) && (selTmp > (MIN_TEMPERATURE * 2))) outEMSBuffer[4] = selTmp;
+	if ((selTmp < (MAX_TEMPERATURE * 2)) && (selTmp >(MIN_TEMPERATURE * 2))) outEMSBuffer[4] = selTmp;
 	else goto sendXML;
 
 	// once the buffer is loaded, send the request.
@@ -2177,16 +2561,16 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
@@ -2197,7 +2581,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 			goto sendXML;
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -2206,7 +2590,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	outEMSBuffer[1] = RC35_ID | 0x80;
 
 	// third position is the message type
-	if(selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
+	if (selHC == 1) outEMSBuffer[2] = RC35_WORKINGMODE_HC1;
 	else outEMSBuffer[2] = RC35_WORKINGMODE_HC2;
 
 	// fourth position is the offset in the buffer.  Night is byte 5 (Offset=5-4=1), Day is byte 6 (Offset=2), Holidays is byte 7 (Offset=3)
@@ -2237,27 +2621,27 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == outEMSBuffer[2])
+				if (inEMSBuffer[2] == outEMSBuffer[2])
 				{
 					hCSelModTemp = ((float)((uint8_t)inEMSBuffer[4])) / 2;
 
-					// check if the working mode has been effectively performed
-					if(hCSelModTemp == ((float)((uint8_t)selTmp)) / 2)
+					// check if the temperature change has been effectively performed
+					if (hCSelModTemp == ((float)((uint8_t)selTmp)) / 2)
 					{
 						returnStatus = true;
 					}
@@ -2277,7 +2661,7 @@ boolean setRC35SelectedTemperature(byte selHC, byte selMode, byte selTmp)
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWiflyXMLTag(xmlTag, 0);
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(xmlTag1, hCSelModTemp);
@@ -2297,8 +2681,262 @@ sendXML:
 
 }
 
+
 /**
-Send a EMS command to set the selected Temperature for warm water
+Send an EMS command to set in the RC35 the selected Temperature for Summer / Winter threshold switchpoint in the selected circuit
+@selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
+@selTmp the desired Summer / Winter Threshold temperature
+@return whether the operation has been correctly executed or not.
+*/
+boolean setRC35SWThresholdTemp(byte selHC, byte selTmp)
+{
+	boolean returnStatus = false;
+	byte hCSWThresTemp;
+	byte messageType;
+	char xmlTag[25];
+	strcpy_P(xmlTag, PSTR("error"));
+
+	if ((selTmp > MAX_SUMMER_WINTER_THRESHOLD) || (selTmp < MIN_SUMMER_WINTER_THRESHOLD)) goto sendXML;
+	else hCSWThresTemp = selTmp;
+
+	switch (selHC)
+	{
+		case 1:
+		{
+			messageType = RC35_WORKINGMODE_HC1;
+			strcpy_P(xmlTag, PSTR("setRC35HC1SWThresholdTemp"));
+			break;
+		}
+
+		case 2:
+		{
+			messageType = RC35_WORKINGMODE_HC2;
+			strcpy_P(xmlTag, PSTR("setRC35HC2SWThresholdTemp"));
+			break;
+		}
+
+		default:
+		{
+			goto sendXML;
+		}
+	}
+
+	returnStatus = sendEMSWriteCommand(RC35_ID, messageType, 22, hCSWThresTemp);
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+sendXML:
+	wifly.sendWiflyXMLTag(xmlTag, 0);
+	if (returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("HCSWThresTemp"), hCSWThresTemp);
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWiflyXMLTag(xmlTag, 1);
+
+#if DEBUG
+	eMSSerial.print(F("In the circuit:"));  eMSSerial.println(selHC); eMSSerial.print(F("Summer Winter Threshold Temperature: ")); eMSSerial.println(hCSWThresTemp);
+#endif
+
+	return (returnStatus);
+}
+
+/**
+Send an EMS command to set in the RC35 the selected Night Setback Mode in the selected circuit
+@selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
+@selMode the selected mode: 0 - Shutdown, 1 - Reduced Operation, 2 - Room Setback, 3 - Outdoor Setback
+@return whether the operation has been correctly executed or not.
+*/
+boolean setRC35NightSetbackMode(byte selHC, byte selMode)
+{
+	boolean returnStatus = false;
+	byte hCNightSetback;
+	byte messageType;
+	char xmlTag[27];
+	strcpy_P(xmlTag, PSTR("error"));
+
+	if ((selMode > 3) || (selMode < 0)) goto sendXML;
+	else hCNightSetback = selMode;
+
+	switch (selHC)
+	{
+		case 1:
+			{
+			messageType = RC35_WORKINGMODE_HC1;
+			strcpy_P(xmlTag, PSTR("setRC35HC1NightSetbackMode"));
+			break;
+		}
+
+		case 2:
+		{
+			messageType = RC35_WORKINGMODE_HC2;
+			strcpy_P(xmlTag, PSTR("setRC35HC2NightSetbackMode"));
+			break;
+		}
+
+		default:
+		{
+			goto sendXML;
+		}
+	}
+
+
+	returnStatus = sendEMSWriteCommand(RC35_ID, messageType, 25, hCNightSetback);
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+sendXML:
+	wifly.sendWiflyXMLTag(xmlTag, 0);
+	if (returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("HCNightSetback"), hCNightSetback);
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWiflyXMLTag(xmlTag, 1);
+
+#if DEBUG
+	eMSSerial.print(F("Night Setback Mode: ")); eMSSerial.println(hCNightSetback);
+#endif
+
+	return (returnStatus);
+}
+
+/**
+Send an EMS command to set in the RC35 selected circuit the outdoor temperature threshold to switch between shutdown and reduced operation mode
+@selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
+@selTmp the desired night threshold temperature
+@return whether the operation has been correctly executed or not.
+*/
+boolean setRC35NightThresholdOutTemp(byte selHC, int8_t selTmp)
+{
+	boolean returnStatus = false;
+	int8_t hCNightOutTemp;
+	byte messageType;
+	char xmlTag[32];
+	strcpy_P(xmlTag, PSTR("error"));
+
+	if ((selTmp > MAX_OUT_NIGHT_THRESHOLD) || (selTmp < MIN_OUT_NIGHT_THRESHOLD)) goto sendXML;
+	else hCNightOutTemp = selTmp;
+
+	switch (selHC)
+	{
+		case 1:
+		{
+			messageType = RC35_WORKINGMODE_HC1;
+			strcpy_P(xmlTag, PSTR("setRC35HC1OutNightThresholdTemp"));
+			break;
+		}
+
+		case 2:
+		{
+			messageType = RC35_WORKINGMODE_HC2;
+			strcpy_P(xmlTag, PSTR("setRC35HC2OutNightThresholdTemp"));
+			break;
+		}
+
+		default:
+		{
+			goto sendXML;
+		}
+	}
+
+	returnStatus = sendEMSWriteCommand(RC35_ID, messageType, 39, hCNightOutTemp);
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+sendXML:
+	wifly.sendWiflyXMLTag(xmlTag, 0);
+	if (returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("HCNightOutTemp"), hCNightOutTemp);
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWiflyXMLTag(xmlTag, 1);
+
+#if DEBUG
+	eMSSerial.print(F("Out Threshold Temperature: ")); eMSSerial.println(hCNightOutTemp);
+#endif
+
+	return (returnStatus);
+}
+
+/**
+Send an EMS command to set in the RC35 selected circuit the Room Temperature Offset
+@selHC the Heating Circuit that we want to modify (1 is HC1, 2 is HC2)
+@selTmp the desired offset temperature (multiplied by two, no decimal)
+@return whether the operation has been correctly executed or not.
+*/
+boolean setRC35RoomTempOffset(byte selHC, int8_t selTmp)
+{
+	boolean returnStatus = false;
+	int8_t hCRoomTempOff;
+	byte messageType;
+	char xmlTag[25];
+
+	if ((selTmp > MAX_ROOM_TEMPERATURE_OFFSET * 2) || (selTmp < MIN_ROOM_TEMPERATURE_OFFSET * 2)) goto sendXML;
+	else hCRoomTempOff = selTmp;
+
+	switch (selHC)
+	{
+	case 1:
+	{
+		messageType = RC35_WORKINGMODE_HC1;
+		strcpy_P(xmlTag, PSTR("setRC35HC1RoomTempOffset"));
+		break;
+	}
+
+	case 2:
+	{
+		messageType = RC35_WORKINGMODE_HC2;
+		strcpy_P(xmlTag, PSTR("setRC35HC2RoomTempOffset"));
+		break;
+	}
+
+	default:
+	{
+		goto sendXML;
+	}
+	}
+
+	returnStatus = sendEMSWriteCommand(RC35_ID, messageType, 6, hCRoomTempOff);
+
+	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
+sendXML:
+	wifly.sendWiflyXMLTag(xmlTag, 0);
+	if (returnStatus)
+	{
+		lastEMSOperationRTC = wifly.getRTC();
+		wifly.sendWiflyXML(F("HCRoomTempOff"), ((float)((int8_t)hCRoomTempOff) / 2));
+		wifly.sendWiflyXML(F("Return"), lastEMSOperationRTC);
+	}
+	else
+	{
+		wifly.sendWiflyXML(F("Return"), returnStatus);
+	}
+	wifly.sendWiflyXMLTag(xmlTag, 1);
+
+#if DEBUG
+	eMSSerial.print(F("Room Temperature Offset: ")); eMSSerial.println(((float)((int8_t)hCRoomTempOff) / 2));
+#endif
+
+	return (returnStatus);
+}
+
+
+/**
+Send an EMS command to set the selected Temperature for warm water
 @selTmp the desired temperature
 @return whether the operation has been correctly executed or not.
 */
@@ -2313,7 +2951,7 @@ boolean setDHWTemperature(byte selTmp)
 	outEMSBuffer[0] = PC_ID;
 
 	// second position is destinationID.
-	outEMSBuffer[1] = MC10_ID;
+	outEMSBuffer[1] = UBA_ID;
 
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
@@ -2322,8 +2960,8 @@ boolean setDHWTemperature(byte selTmp)
 	outEMSBuffer[3] = 2;
 
 	// fifth position is the data to send
-	if(selTmp < MAX_WW_TEMPERATURE && selTmp > MIN_WW_TEMPERATURE) outEMSBuffer[4] = selTmp; 
-	else goto sendXML;	
+	if (selTmp < MAX_WW_TEMPERATURE && selTmp > MIN_WW_TEMPERATURE) outEMSBuffer[4] = selTmp;
+	else goto sendXML;
 
 	// once the buffer is loaded, send the request.
 	sendRequest(outEMSBuffer);
@@ -2332,16 +2970,16 @@ boolean setDHWTemperature(byte selTmp)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
@@ -2352,13 +2990,13 @@ boolean setDHWTemperature(byte selTmp)
 			goto sendXML;
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
 
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 
 	// third position is the message type
 	outEMSBuffer[2] = UBA_PARAMETER_WW;
@@ -2376,27 +3014,27 @@ boolean setDHWTemperature(byte selTmp)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_PARAMETER_WW)
+				if (inEMSBuffer[2] == UBA_PARAMETER_WW)
 				{
 					wWSelTemp = (uint8_t)inEMSBuffer[4];
-					
+
 					// check if the temperature set corresponds with the demanded one
-					if(wWSelTemp == selTmp)
+					if (wWSelTemp == selTmp)
 					{
 						returnStatus = true;
 					}
@@ -2416,7 +3054,7 @@ boolean setDHWTemperature(byte selTmp)
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWifly(F("<SetWarmWatterTemperature>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("wWSelTemp"), wWSelTemp);
@@ -2437,7 +3075,7 @@ sendXML:
 
 
 /**
-Send a EMS command to set the warm watter program (WW and Pump)
+Send an EMS command to set the warm watter program (WW and Pump)
 @selProgram the working program we want to configure (0 = like the heating circuit, 255 = own program)
 @return whether the operation has been correctly executed or not.
 */
@@ -2501,7 +3139,7 @@ boolean setDHWProgram(byte selProgram)
 	// third position is the message type
 	outEMSBuffer[2] = UBA_WORKINGMODE_WW;
 
-	// fourth position is the offset in the buffer. DHW Program is at position 5, so 5-4=1
+	// fourth position is the offset in the buffer. DHW PumpProgram is at position 5, so 5-4=1
 	outEMSBuffer[3] = 1;
 
 	// fifth position is the data to send
@@ -2624,7 +3262,7 @@ sendXML:
 }
 
 /**
-Send a EMS command to set the warm watter working mode (WW and Pump)
+Send an EMS command to set the warm watter working mode (WW and Pump)
 @selMode the desired mode (0-off, 1-on, 2-auto)
 @return whether the operation has been correctly executed or not.
 */
@@ -2644,7 +3282,7 @@ boolean setDHWWorkingMode(byte selMode)
 	// fourth position is the offset in the buffer. Warm Water Working Mode is position 6 - 4 = 2
 	outEMSBuffer[3] = 2;
 	// fifth position is the data to send
-	if(selMode > 2 || selMode < 0) goto sendXML;
+	if (selMode > 2 || selMode < 0) goto sendXML;
 	else outEMSBuffer[4] = selMode;
 
 	// once the buffer is loaded, send the request.
@@ -2654,20 +3292,20 @@ boolean setDHWWorkingMode(byte selMode)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
-		else 
+		else
 		{
 			returnStatus = false;
 			goto sendXML;
@@ -2693,16 +3331,16 @@ boolean setDHWWorkingMode(byte selMode)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
@@ -2712,7 +3350,7 @@ boolean setDHWWorkingMode(byte selMode)
 			goto sendXML;
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 	// first position is the transmitterID. Ox0b is the ComputerID (our address)
 	outEMSBuffer[0] = PC_ID;
@@ -2732,28 +3370,28 @@ boolean setDHWWorkingMode(byte selMode)
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_WORKINGMODE_WW)
+				if (inEMSBuffer[2] == UBA_WORKINGMODE_WW)
 				{
 					wWWorkMod = (uint8_t)inEMSBuffer[4];
 					wWPumpWorkMod = (uint8_t)inEMSBuffer[5];
 
 					// check if the WWmode set corresponds with the demanded one
-					if((wWWorkMod == selMode) && (wWPumpWorkMod == selMode))
+					if ((wWWorkMod == selMode) && (wWPumpWorkMod == selMode))
 					{
 						returnStatus = true;
 					}
@@ -2775,7 +3413,7 @@ boolean setDHWWorkingMode(byte selMode)
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWifly(F("<SetWarmWatterWorkingMode>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("wWWorkMod"), wWWorkMod);
@@ -2797,7 +3435,7 @@ sendXML:
 }
 
 /**
-Send a EMS command to set the warm watter one time function on or off
+Send an EMS command to set the warm watter one time function on or off
 @selMode the desired mode (0-off, 1-on).
 @return whether the operation has been correctly executed or not.
 */
@@ -2814,7 +3452,7 @@ boolean setDHWOneTime(byte selMode)
 	outEMSBuffer[0] = PC_ID;
 
 	// second position is destinationID.
-	outEMSBuffer[1] = MC10_ID;
+	outEMSBuffer[1] = UBA_ID;
 
 	// third position is the message type
 	outEMSBuffer[2] = UBA_FLAG_WW;
@@ -2823,8 +3461,8 @@ boolean setDHWOneTime(byte selMode)
 	outEMSBuffer[3] = 0;
 
 	// fifth position is the data to send
-	if(selMode == 0) outEMSBuffer[4] = WW_ONETIME_OFF;
-	else if(selMode == 1) outEMSBuffer[4] = WW_ONETIME_ON;
+	if (selMode == 0) outEMSBuffer[4] = WW_ONETIME_OFF;
+	else if (selMode == 1) outEMSBuffer[4] = WW_ONETIME_ON;
 	else goto sendXML;
 
 retryOp:
@@ -2840,25 +3478,25 @@ retryOp:
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if the answer received is 0x01, the value has been correctly sent
-		if(inEMSBuffer[0] == 0x01)
+		if (inEMSBuffer[0] == 0x01)
 		{
 			returnStatus = true;
 		}
 		else
 		{
-			if(retries == 0)
+			if (retries == 0)
 			{
 				returnStatus = false;
-				goto sendXML; 
+				goto sendXML;
 			}
 			else
 			{
@@ -2872,7 +3510,7 @@ retryOp:
 	outEMSBuffer[0] = PC_ID;
 
 	// second position is destinationID. Masked with 0x80 as a read command
-	outEMSBuffer[1] = MC10_ID | 0x80;
+	outEMSBuffer[1] = UBA_ID | 0x80;
 
 	// third position is the message type
 	outEMSBuffer[2] = UBA_MONITOR_WW;
@@ -2891,32 +3529,32 @@ retryOp:
 	timeout = (long)millis() + EMSMaxAnswerTime;
 
 	// wait until timeout or some new data in the EMS-Bus
-	while((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
+	while ((((long)millis() - timeout) < 0) && (!eMSSerial3.available())) {}
 
 	// if there is data to be read
-	if(eMSSerial3.available())
+	if (eMSSerial3.available())
 	{
 		// read the information sent
 		int ptr = readBytes(inEMSBuffer);
 
 		// if more than 4 bytes are read (datagram received)
-		if(ptr > 4)
+		if (ptr > 4)
 		{
 			// check if the CRC of the information received is correct
-			if(crcCheckOK(inEMSBuffer, ptr))
+			if (crcCheckOK(inEMSBuffer, ptr))
 			{
 				// check if the operation type returned corresponds with the one requested
-				if(inEMSBuffer[2] == UBA_MONITOR_WW)
+				if (inEMSBuffer[2] == UBA_MONITOR_WW)
 				{
 					wWOneTime = bitRead((uint8_t)inEMSBuffer[4], 1);
-					
-					if(wWOneTime == selMode)
+
+					if (wWOneTime == selMode)
 					{
 						returnStatus = true;
 					}
 					else
 					{
-						if(retries == 0)
+						if (retries == 0)
 						{
 							returnStatus = false;
 							goto sendXML;
@@ -2929,7 +3567,7 @@ retryOp:
 				}
 				else
 				{
-					if(retries > 0)
+					if (retries > 0)
 					{
 						goto retryOp;
 					}
@@ -2942,11 +3580,11 @@ retryOp:
 			}
 		}
 	}
-	
+
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWifly(F("<SetWarmWaterOneTime>"));
-	if(returnStatus)
+	if (returnStatus)
 	{
 		lastEMSOperationRTC = wifly.getRTC();
 		wifly.sendWiflyXML(F("WWOneTime"), wWOneTime);
@@ -2983,26 +3621,26 @@ boolean setProgramSwitchPoint(byte selProgram, byte switchPoint, byte operation,
 
 	switch (selProgram)
 	{
-		case 0:
-			selProgram = 0x38;
-			break;
-		case 1:
-			selProgram = 0x39;
-			break;
-		case 2:
-			selProgram = 0x3F;
-			break;
-		case 3:
-			selProgram = 0x42;
-			break;
-		case 4:
-			selProgram = 0x49;
-			break;
-		case 5:
-			selProgram = 0x4C;
-			break;
-		default: goto sendXML;
-			break;
+	case 0:
+		selProgram = 0x38;
+		break;
+	case 1:
+		selProgram = 0x39;
+		break;
+	case 2:
+		selProgram = 0x3F;
+		break;
+	case 3:
+		selProgram = 0x42;
+		break;
+	case 4:
+		selProgram = 0x49;
+		break;
+	case 5:
+		selProgram = 0x4C;
+		break;
+	default: goto sendXML;
+		break;
 	}
 
 	if (switchPoint >= SWITCHING_POINTS) goto sendXML;
@@ -3013,14 +3651,14 @@ boolean setProgramSwitchPoint(byte selProgram, byte switchPoint, byte operation,
 
 	if (hour > 23) goto sendXML;
 
-	if (minute > 59 || ((minute % 10)!=0)) goto sendXML;
+	if (minute > 59 || ((minute % 10) != 0)) goto sendXML;
 
 	byte1 = (operation == 7) ? 0xE7 : (0x00 | (day << 5) | (operation));
 	returnStatus = sendEMSWriteCommand(RC35_ID, selProgram, switchPoint * 2, byte1);
 
-	byte2 = (operation == 7)? 0x90:((hour * 6) + (minute / 10));
-	returnStatus &= sendEMSWriteCommand(RC35_ID, selProgram, (switchPoint * 2)+1, byte2);
-	
+	byte2 = (operation == 7) ? 0x90 : ((hour * 6) + (minute / 10));
+	returnStatus &= sendEMSWriteCommand(RC35_ID, selProgram, (switchPoint * 2) + 1, byte2);
+
 	// send the XML response if the EMS operation returned correctly (tag Return contains RTC), send only tag Return (contains false) otherwise
 sendXML:
 	wifly.sendWifly(F("<setSwitchPointProgram>"));
@@ -3047,7 +3685,7 @@ sendXML:
 #endif
 
 	return (returnStatus);
-	
+
 }
 
 /**
@@ -3102,12 +3740,12 @@ boolean sendEMSWriteCommand(byte destinationID, byte messageType, byte offset, b
 			return false;
 		}
 	}
-	
+
 	// load outEMSBuffer with corresponding values.
 
 	// second position is destinationID. Masked with 0x80 as a read command
 	outEMSBuffer[1] = destinationID | 0x80;
-	
+
 	// fifth position is the length of the data requested.
 	outEMSBuffer[4] = 1;
 
@@ -3175,7 +3813,7 @@ boolean getCalduinoStats(byte mode)
 
 	// send the XML response
 	wifly.sendWifly(F("<Calduino>"));
-	if(mode == CALDUINO_FULL_STADISTICS)
+	if (mode == CALDUINO_FULL_STADISTICS)
 	{
 		wifly.sendWiflyXML(F("MAC"), wifly.getMAC(auxBuffer, sizeof(auxBuffer)));
 		wifly.sendWiflyXML(F("IP"), wifly.getIP(auxBuffer, sizeof(auxBuffer)));
@@ -3203,19 +3841,19 @@ boolean getCalduinoStats(byte mode)
 /**
 Configure WiFly  with the standard parameters and the TimeZone passed as parameter.
 
-@reqNtpTimeZone Requested Time Zone to be configured (Winter = 0 - 23 / Summer = 1 - 22). 
+@reqNtpTimeZone Requested Time Zone to be configured (Winter = 0 - 23 / Summer = 1 - 22).
 @return Whether WiFly is joined to the WiFi connection configured or not.
 */
 boolean configureWifly(uint8_t reqNtpTimeZone)
 {
 
-	if(reqNtpTimeZone == 1) nTPTimeZone = SUMMER_TIMEZONE;
-	else if(reqNtpTimeZone == 0) nTPTimeZone = WINTER_TIMEZONE;
+	if (reqNtpTimeZone == 1) nTPTimeZone = SUMMER_TIMEZONE;
+	else if (reqNtpTimeZone == 0) nTPTimeZone = WINTER_TIMEZONE;
 	else
 	{
-		#if DEBUG
-			eMSSerial.println(F("Error configureWifly: Incorrect parameter."));
-		#endif
+#if DEBUG
+		eMSSerial.println(F("Error configureWifly: Incorrect parameter."));
+#endif
 		return false;
 	}
 
@@ -3236,33 +3874,33 @@ boolean configureWifly(uint8_t reqNtpTimeZone)
 	wifly.setTimeEnable(NTP_UPDATE_TIME);
 	wifly.save();
 	wifly.reboot();
-	
+
 	// wait time until WiFly reboots
 	delay(MAIN_LOOP_WAIT_TIME * 5);
 
 	boolean joined = wifly.isAssociated();
-	if(joined)
+	if (joined)
 	{
 		wifly.time();
 
-		// wait max. 1000 seconds until RTC time is received
-		while(wifly.getRTC() < MAIN_LOOP_WAIT_TIME)
+		// wait max. 100 seconds until RTC time is received
+		while (wifly.getRTC() < MAIN_LOOP_WAIT_TIME/10)
 		{
-		#if DEBUG
+#if DEBUG
 			eMSSerial.println(F("ConfigureWifly: Waiting to get time."));
-		#endif
+#endif
 			wifly.time();
-			delay(MAIN_LOOP_WAIT_TIME);
+			delay(MAIN_LOOP_WAIT_TIME*5);
 		}
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("ConfigureWifly: WiFly  joined and time configured."));
-	#endif
+#endif
 	}
 	else
 	{
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("Error ConfigureWifly: Not joined."));
-	#endif
+#endif
 	}
 	return joined;
 
@@ -3303,7 +3941,7 @@ boolean setEMSTimeout(uint8_t timeout)
 	uint32_t currentRTC = wifly.getRTC();
 
 	wifly.sendWifly(F("<Calduino>"));
-	wifly.sendWiflyXML(F("EMSTimeout"), (int) EMSMaxAnswerTime);
+	wifly.sendWiflyXML(F("EMSTimeout"), (int)EMSMaxAnswerTime);
 	wifly.sendWiflyXML(F("Return"), currentRTC);
 	wifly.sendWifly(F("</Calduino>"));
 
@@ -3348,28 +3986,28 @@ boolean restartWifly()
 	delay(MAIN_LOOP_WAIT_TIME * 5);
 
 	boolean joined = wifly.isAssociated();
-	if(joined)
+	if (joined)
 	{
 		wifly.time();
 
-		//Wait max. 1000 seconds until RTC time is received
-		while(wifly.getRTC() < MAIN_LOOP_WAIT_TIME)
+		//Wait max. 100 seconds until RTC time is received
+		while (wifly.getRTC() < MAIN_LOOP_WAIT_TIME/10)
 		{
-		#if DEBUG
+#if DEBUG
 			eMSSerial.println(F("RestartWifly: Waiting to get time."));
-		#endif
+#endif
 			wifly.time();
-			delay(MAIN_LOOP_WAIT_TIME);
+			delay(MAIN_LOOP_WAIT_TIME*5);
 		}
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("RestartWifly: WiFly  joined and time configured."));
-	#endif
+#endif
 	}
 	else
 	{
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("Error RestartWifly: Not joined."));
-	#endif
+#endif
 	}
 	return wifly.isAssociated();
 
@@ -3395,45 +4033,53 @@ boolean setupWifly()
 
 	wiflyAssociated = wifly.isAssociated();
 
-	while(!wiflyAssociated)
+	while (!wiflyAssociated)
 	{
 		boolean wiflyRestarted = false;
 
-		while(!wiflyRestarted)
+		while (!wiflyRestarted)
 		{
 			wiflyRestarted = restartWifly();
-		#if DEBUG
+#if DEBUG
 			if (!wiflyRestarted) eMSSerial.println(F("Error SetupWifly: Failed at restarting WiFly ."));
-		#endif
+#endif
 		}
 
 		wiflyAssociated = configureWifly(nTPTimeZone);
 
-		if(!wiflyAssociated)
+		if (!wiflyAssociated)
 		{
-		#if DEBUG
+#if DEBUG
 			eMSSerial.println("Error SetupWifly: Failed at configuring WiFly ");
-		#endif
+#endif
 
 			// Wait a few seconds and try the operation again
 			delay(MAIN_LOOP_WAIT_TIME * 5);
 		}
 	}
 
+	/* Reconfiguring time problems 
+	wifly.setTimeAddress(nTPServer);
+	wifly.setTimeEnable(NTP_UPDATE_TIME);
+	//wifly.setTimePort(nTPServerPort);
+	//wifly.setTimezone(nTPTimeZone);
+	wifly.save();
+	/**/
+
 	wifly.time();
 
-	//Wait max. 1000 seconds until RTC time is received. When NTP is not synchronized, getRTC returns WiflyUptime
-	while(wifly.getRTC() < MAIN_LOOP_WAIT_TIME)
+	//Wait max. 100 seconds until RTC time is received. When NTP is not synchronized after 100 seconds, getRTC returns WiflyUptime
+	while (wifly.getRTC() < MAIN_LOOP_WAIT_TIME/10)
 	{
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("SetupWifly: Waiting to get time."));
-	#endif
-		wifly.time();
-		delay(MAIN_LOOP_WAIT_TIME);
+#endif
+		//wifly.time();
+		delay(MAIN_LOOP_WAIT_TIME*5);
 	}
 
 #if DEBUG
-	eMSSerial.println(F("SetupWifly: WiFly  joined and time configured."));
+	eMSSerial.println(F("SetupWifly: WiFly joined and time configured."));
 #endif
 
 }
@@ -3441,7 +4087,7 @@ boolean setupWifly()
 /**
 Read the HTTP Request received. The operation requested will be stored in the global variable operationRequested.
 
-@return the operation read in the HTTP Request, or NO_OPERATION if nothing is found 
+@return the operation read in the HTTP Request, or NO_OPERATION if nothing is found
 */
 byte readHTTPRequest()
 {
@@ -3450,9 +4096,9 @@ byte readHTTPRequest()
 	char index = 0;
 
 	// initialize server
-	memset(httpBuffer, 0, HTTP_BUFFER_SIZE);	
+	memset(httpBuffer, 0, HTTP_BUFFER_SIZE);
 
-	if(wifly.available() > 0)
+	if (wifly.available() > 0)
 	{
 		wifly.gets(httpBuffer, sizeof(httpBuffer));
 	}
@@ -3469,7 +4115,7 @@ byte readHTTPRequest()
 	eMSSerial.print(F("op: "));
 	eMSSerial.println(operationRequested);
 #endif
-	
+
 	return operationRequested;
 
 }
@@ -3493,14 +4139,14 @@ byte getParameterFromHTTP(char* searchedString, uint8_t parameterLength)
 	//Variable to return by default
 	byte parameter = NO_OPERATION;
 
-	if(auxP != 0)
+	if (auxP != 0)
 	{
 		//put the pointer at the start of the parameter to read
 		auxP += strlen(searchedString);
 		parameter = 0;
 
 		// get the "parameterLength" digits and return the parameter
-		for(; parameterLength > 0; parameterLength--)
+		for (; parameterLength > 0; parameterLength--)
 		{
 			parameter = parameter * 10 + *auxP - '0';
 			auxP++;
@@ -3510,6 +4156,37 @@ byte getParameterFromHTTP(char* searchedString, uint8_t parameterLength)
 	return parameter;
 
 }
+
+/**
+Search for a parameter with sign (-) in the HTTP Buffer received and return the number of digits requested to be read.
+
+@searchedString parameter searched.
+@parameterLength number of digits to be read.
+
+@return parameter requested, NO_OPERATION if not found.
+*/
+int8_t getSignedParameterFromHTTP(char* searchedString, uint8_t parameterLength)
+{
+	char *auxP = 0;
+	char parameter;
+	auxP = strstr(httpBuffer, "-");
+
+	if (auxP != 0)
+	{
+		char* searchedSignedString = malloc(strlen(searchedString) + 1);
+		strcpy(searchedSignedString, searchedString);
+		strcat(searchedSignedString, "-");
+		parameter = getParameterFromHTTP(searchedSignedString, parameterLength) * -1;
+	}
+	else
+	{
+		parameter = getParameterFromHTTP(searchedString, parameterLength);
+	}
+
+	return parameter;
+
+}
+
 
 #pragma endregion WiflyOperations
 
@@ -3526,171 +4203,206 @@ boolean executeOperation(byte operationRequested)
 	boolean returnStatus = false;
 	resetBuffer(inEMSBuffer);
 
-	switch(operationRequested)
+	switch (operationRequested)
 	{
-		case GET_ALL_MONITORS:
-		#if DEBUG
-			eMSSerial.println(F("Get All Monitors"));
-		#endif
-			returnStatus = getAllMonitors();
-			break;
-
-		case GET_RCTIME:
-		#if DEBUG
-			eMSSerial.println(F("Get RCTime"));
-		#endif
-			returnStatus = getRCTime();
-			break;
-
-		case GET_UBA_MONITOR:
-		#if DEBUG
-			eMSSerial.println(F("Get Universal Automatic Burner Monitor"));
-		#endif
-			returnStatus = getUBAMonitor();
-			break;
-
-		case GET_UBA_MONITOR_WW:
-		#if DEBUG
-			eMSSerial.println(F("Get Universal Automatic Burner Monitor Warm Water"));
-		#endif
-			returnStatus = getUBAMonitorWarmWater();
-			break;
-
-		case GET_RC35_MONITOR_HC1:
-		#if DEBUG
-			eMSSerial.println(F("Get RC35 Heating Circuit 1"));
-		#endif
-			returnStatus = getRC35MonitorHeatingCircuit(1);
-			break;
-
-		case GET_RC35_MONITOR_HC2:
-		#if DEBUG
-			eMSSerial.println(F("Get RC35 Heating Circuit 2"));
-		#endif
-			returnStatus = getRC35MonitorHeatingCircuit(2);
-			break;
-
-		case GET_GENERAL_MONITOR:
-		#if DEBUG
-			eMSSerial.println(F("Get General Monitor"));
-		#endif
-			returnStatus = getGeneralMonitor(false);
-			break;
-
-		case GET_PROGRAM:			 
-		#if DEBUG
-			eMSSerial.println(F("Get Program:")); eMSSerial.print(getParameterFromHTTP("?pr=", 1));
-		#endif
-			returnStatus = getProgramSwitchPoints(getParameterFromHTTP("?pr=", 1));
-			break;
-
-		case GET_CALDUINO_BASIC:
-		#if DEBUG
-			eMSSerial.println(F("Get Basic Calduino Statistics"));
-		#endif
-			returnStatus = getCalduinoStats(CALDUINO_BASIC_STADISTICS);
-			break;
-
-		case GET_CALDUINO_FULL:
-		#if DEBUG
-			eMSSerial.println(F("Get Full Calduino Statistics"));
-		#endif
-			returnStatus = getCalduinoStats(CALDUINO_FULL_STADISTICS);
-			break;
-
-		case RESET_CALDUINO_STATS:
-		#if DEBUG
-			eMSSerial.println(F("Reset Calduino Statistics"));
-		#endif
-			returnStatus = resetCalduinoStadistics();
-			break;
-
-		case SET_EMS_TIMEOUT:
-		#if DEBUG
-			eMSSerial.println(F("Set EMS Timeout"));
-		#endif
-			returnStatus = setEMSTimeout(getParameterFromHTTP("?to=", 2));
-			break;
-
-		case SET_RC35_WORKING_MODE:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to working Mode (0-night, 1-day, 2-auto) ")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
-		#endif
-			returnStatus = setRC35WorkingMode(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?wm=", 1));
-			break;
-
-		case SET_RC35_TEMPERATURE:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" for Mode (0-night, 1-day, 2-holiday) ")); eMSSerial.print(getParameterFromHTTP("?wm=", 1)); eMSSerial.print(F(" to temperature ")); eMSSerial.println(getParameterFromHTTP("?tp=", 2)/2);
-		#endif
-			returnStatus = setRC35SelectedTemperature(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?wm=", 1), getParameterFromHTTP("?tp=", 2));
-			break;
-
-		case SET_WW_TEMPERATURE:
-		#if DEBUG
-			eMSSerial.print(F("Set warm watter temperature to ")); eMSSerial.println(getParameterFromHTTP("?tp=", 2));
-		#endif
-			returnStatus = setDHWTemperature(getParameterFromHTTP("?tp=", 2));
-			break;
-
-		case SET_WW_WORKING_MODE:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 warm water working mode (0-off, 1-on, 2-auto) ")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
-		#endif
-			returnStatus = setDHWWorkingMode(getParameterFromHTTP("?wm=", 1));
-			break;
-
-		case SET_WW_ONE_TIME:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 warm watter one time (0-off, 1-on)")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
-		#endif
-			returnStatus = setDHWOneTime(getParameterFromHTTP("?wm=", 1));
-			break;
-
-		case SET_RC35_PROGRAM:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to Program 0x00 = User 1, 0x01 = Family, 0x02 = Morning, 0x03 = Early morning, 0x04 = Evening, 0x05 = Midmorning, 0x06 = Afternoon, 0x07 = Midday, 0x08 = Single, 0x09 = Senioren, 0x0A User2) to: ")); eMSSerial.println(getParameterFromHTTP("?pr=", 2));
-		#endif
-			returnStatus = setRC35Program(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?pr=", 2));
-		break;
-		
-		case SET_WW_PROGRAM:
-		#if DEBUG
-			eMSSerial.print(F("Set RC35 warm water program (0 = like the heating circuit, 255 = own program) to: ")); eMSSerial.println(getParameterFromHTTP("?pr=", 3));
-		#endif
-			returnStatus = setDHWProgram(getParameterFromHTTP("?pr=", 3));
+	case GET_ALL_MONITORS:
+#if DEBUG
+		eMSSerial.println(F("Get All Monitors"));
+#endif
+		returnStatus = getAllMonitors();
 		break;
 
-		case SET_SWITCH_POINT:
-		#if DEBUG
-			eMSSerial.print(F("Set Switch Point for program: ")); eMSSerial.print(getParameterFromHTTP("?pr=", 1)); eMSSerial.print(F(" point number: ")); eMSSerial.print(getParameterFromHTTP("?sp=", 2)); eMSSerial.print(F(" to: ")); eMSSerial.print(getParameterFromHTTP("?on=", 1)); eMSSerial.print(F(" day: ")); eMSSerial.print(getParameterFromHTTP("?d=", 1)); eMSSerial.print(F(" hour: ")); eMSSerial.print(getParameterFromHTTP("?h=", 2)); eMSSerial.print(F(" minute: ")); eMSSerial.print(getParameterFromHTTP("?m=", 2));
-		#endif
-			returnStatus = setProgramSwitchPoint(getParameterFromHTTP("?pr=", 1), getParameterFromHTTP("?sp=", 2), getParameterFromHTTP("?on=", 1), getParameterFromHTTP("?d=", 1), getParameterFromHTTP("?h=", 2), getParameterFromHTTP("?m=", 2));
+	case GET_RCTIME:
+#if DEBUG
+		eMSSerial.println(F("Get RCTime"));
+#endif
+		returnStatus = getRCTime();
 		break;
 
-		case REBOOT_CALDUINO:
-		#if DEBUG
-			eMSSerial.print(F("Rebooting Calduino"));
-		#endif
-			returnStatus = restartWifly();
-			break;
+	case GET_UBA_MONITOR:
+#if DEBUG
+		eMSSerial.println(F("Get Universal Automatic Burner Monitor"));
+#endif
+		returnStatus = getUBAMonitor();
+		break;
 
-		case RECONFIGURE_CALDUINO:
-		#if DEBUG
-			eMSSerial.print(F("Configuring WiFly  (0 winter - 1 summer):")); eMSSerial.println(getParameterFromHTTP("?tz=", 1));
-		#endif
-			returnStatus = configureWifly(getParameterFromHTTP("?tz=", 1));
-			break;
+	case GET_UBA_MONITOR_WW:
+#if DEBUG
+		eMSSerial.println(F("Get Universal Automatic Burner Monitor Warm Water"));
+#endif
+		returnStatus = getUBAMonitorWarmWater();
+		break;
 
-		case NO_OPERATION:
-		#if DEBUG
-			eMSSerial.println(F("Incorrect operation received. Closing connection"));
-		#endif
-			returnStatus = false;
-			break;
+	case GET_RC35_MONITOR_HC1:
+#if DEBUG
+		eMSSerial.println(F("Get RC35 Heating Circuit 1"));
+#endif
+		returnStatus = getRC35MonitorHC(1);
+		break;
+
+	case GET_RC35_MONITOR_HC2:
+#if DEBUG
+		eMSSerial.println(F("Get RC35 Heating Circuit 2"));
+#endif
+		returnStatus = getRC35MonitorHC(2);
+		break;
+
+	case GET_MM10_MONITOR:
+#if DEBUG
+		eMSSerial.println(F("Get MM10 Monitor"));
+#endif
+		returnStatus = getMM10Monitor();
+		break;
+
+	case GET_GENERAL_MONITOR:
+#if DEBUG
+		eMSSerial.println(F("Get General Monitor"));
+#endif
+		returnStatus = getGeneralMonitor(false);
+		break;
+
+	case GET_PROGRAM:
+#if DEBUG
+		eMSSerial.println(F("Get Program:")); eMSSerial.print(getParameterFromHTTP("?pr=", 1));
+#endif
+		returnStatus = getProgramSwitchPoints(getParameterFromHTTP("?pr=", 1));
+		break;
+
+	case GET_CALDUINO_BASIC:
+#if DEBUG
+		eMSSerial.println(F("Get Basic Calduino Statistics"));
+#endif
+		returnStatus = getCalduinoStats(CALDUINO_BASIC_STADISTICS);
+		break;
+
+	case GET_CALDUINO_FULL:
+#if DEBUG
+		eMSSerial.println(F("Get Full Calduino Statistics"));
+#endif
+		returnStatus = getCalduinoStats(CALDUINO_FULL_STADISTICS);
+		break;
+
+	case RESET_CALDUINO_STATS:
+#if DEBUG
+		eMSSerial.println(F("Reset Calduino Statistics"));
+#endif
+		returnStatus = resetCalduinoStadistics();
+		break;
+
+	case SET_EMS_TIMEOUT:
+#if DEBUG
+		eMSSerial.println(F("Set EMS Timeout"));
+#endif
+		returnStatus = setEMSTimeout(getParameterFromHTTP("?to=", 2));
+		break;
+
+	case SET_RC35_WORKING_MODE:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to working Mode (0-night, 1-day, 2-auto) ")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
+#endif
+		returnStatus = setRC35WorkingMode(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?wm=", 1));
+		break;
+
+	case SET_RC35_TEMPERATURE:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" for Mode (0-night, 1-day, 2-holiday) ")); eMSSerial.print(getParameterFromHTTP("?wm=", 1)); eMSSerial.print(F(" to temperature ")); eMSSerial.println(getParameterFromHTTP("?tp=", 2) / 2);
+#endif
+		returnStatus = setRC35SelectedTemperature(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?wm=", 1), getParameterFromHTTP("?tp=", 2));
+		break;
+
+	case SET_WW_TEMPERATURE:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 warm watter temperature to ")); eMSSerial.println(getParameterFromHTTP("?tp=", 2));
+#endif
+		returnStatus = setDHWTemperature(getParameterFromHTTP("?tp=", 2));
+		break;
+
+	case SET_WW_WORKING_MODE:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 warm water working mode (0-off, 1-on, 2-auto) ")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
+#endif
+		returnStatus = setDHWWorkingMode(getParameterFromHTTP("?wm=", 1));
+		break;
+
+	case SET_WW_ONE_TIME:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 warm watter one time (0-off, 1-on)")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
+#endif
+		returnStatus = setDHWOneTime(getParameterFromHTTP("?wm=", 1));
+		break;
+
+	case SET_RC35_PROGRAM:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 Circuit ")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to Program 0x00 = User 1, 0x01 = Family, 0x02 = Morning, 0x03 = Early morning, 0x04 = Evening, 0x05 = Midmorning, 0x06 = Afternoon, 0x07 = Midday, 0x08 = Single, 0x09 = Senioren, 0x0A User2) to: ")); eMSSerial.println(getParameterFromHTTP("?pr=", 2));
+#endif
+		returnStatus = setRC35Program(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?pr=", 2));
+		break;
+
+	case SET_WW_PROGRAM:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 warm water program (0 = like the heating circuit, 255 = own program) to: ")); eMSSerial.println(getParameterFromHTTP("?pr=", 3));
+#endif
+		returnStatus = setDHWProgram(getParameterFromHTTP("?pr=", 3));
+		break;
+
+	case SET_SWITCH_POINT:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 Switch Point for program: ")); eMSSerial.print(getParameterFromHTTP("?pr=", 1)); eMSSerial.print(F(" point number: ")); eMSSerial.print(getParameterFromHTTP("?sp=", 2)); eMSSerial.print(F(" to: ")); eMSSerial.print(getParameterFromHTTP("?on=", 1)); eMSSerial.print(F(" day: ")); eMSSerial.print(getParameterFromHTTP("?d=", 1)); eMSSerial.print(F(" hour: ")); eMSSerial.print(getParameterFromHTTP("?h=", 2)); eMSSerial.print(F(" minute: ")); eMSSerial.print(getParameterFromHTTP("?m=", 2));
+#endif
+		returnStatus = setProgramSwitchPoint(getParameterFromHTTP("?pr=", 1), getParameterFromHTTP("?sp=", 2), getParameterFromHTTP("?on=", 1), getParameterFromHTTP("?d=", 1), getParameterFromHTTP("?h=", 2), getParameterFromHTTP("?m=", 2));
+		break;
+
+	case SET_SW_THRESHOLD_TEMP:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 summer/winter threshold in circuit:")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to Temperature:")); eMSSerial.println(getParameterFromHTTP("?tp=", 2));
+#endif
+		returnStatus = setRC35SWThresholdTemp(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?tp=", 2));
+		break;
+
+	case SET_NIGHT_SETBACK_MODE:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 night setback mode (0 - Shutdown, 1 - Reduced Operation, 2 - Room Setback, 3 - Outdoor Setback) in circuit:")); eMSSerial.print(getParameterFromHTTP("?hc=", 1));  eMSSerial.print(F(" to Mode:")); eMSSerial.println(getParameterFromHTTP("?wm=", 1));
+#endif
+		returnStatus = setRC35NightSetbackMode(getParameterFromHTTP("?hc=", 1), getParameterFromHTTP("?wm=", 1));
+		break;
+
+	case SET_NIGHT_THRESHOLD_OUTTEMP:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 temperature threshold for outdoor setback in circuit:")); eMSSerial.print(getParameterFromHTTP("?hc=", 1));  eMSSerial.print(F(" to Temperature:"));  eMSSerial.println(getSignedParameterFromHTTP("?tp=", 2));
+#endif
+		returnStatus = setRC35NightThresholdOutTemp(getParameterFromHTTP("?hc=", 1), getSignedParameterFromHTTP("?tp=", 2));
+		break;
+
+	case SET_ROOM_TEMPERATURE_OFFSET:
+#if DEBUG
+		eMSSerial.print(F("Set RC35 room temperature offset in circuit:")); eMSSerial.print(getParameterFromHTTP("?hc=", 1)); eMSSerial.print(F(" to Value:")); eMSSerial.println(getSignedParameterFromHTTP("?tp=", 2) / 2);
+#endif		
+		returnStatus = setRC35RoomTempOffset(getParameterFromHTTP("?hc=", 1), getSignedParameterFromHTTP("?tp=", 2));
+		break;
+
+	case REBOOT_CALDUINO:
+#if DEBUG
+		eMSSerial.print(F("Rebooting Calduino"));
+#endif
+		returnStatus = restartWifly();
+		break;
+
+	case RECONFIGURE_CALDUINO:
+#if DEBUG
+		eMSSerial.print(F("Configuring WiFly  (0 winter - 1 summer):")); eMSSerial.println(getParameterFromHTTP("?tz=", 1));
+#endif
+		returnStatus = configureWifly(getParameterFromHTTP("?tz=", 1));
+		break;
+
+	case NO_OPERATION:
+#if DEBUG
+		eMSSerial.println(F("Incorrect operation received. Closing connection"));
+#endif
+		returnStatus = false;
+		break;
 	}
 
-	if(returnStatus)
+	if (returnStatus)
 	{
 		operationsOK++;
 
@@ -3700,7 +4412,7 @@ boolean executeOperation(byte operationRequested)
 		operationsNOK++;
 	}
 
-	if(operationRequested != NO_OPERATION)
+	if (operationRequested != NO_OPERATION)
 	{
 		// rearm timeout
 		wiflyTimeout = (uint32_t)millis() + WIFLY_TIMEOUT;
@@ -3715,26 +4427,22 @@ boolean executeOperation(byte operationRequested)
 Check if there has not been communication with the WiFly module since a predetermined timeout.
 If so, check if the WiFly is already associated. If not associated, try to restart and configure it.
 Will not end until a connection is reached.
-
-@operationRequested code of the operation requested.
-
-@return whether the operation has been correctly executed or not.
 */
 void checkWiFlyTimeout()
 {
 	// check if wiflyTimeout has expired. If so, test the connection and communication with wily
-	if((uint32_t)millis() > wiflyTimeout)
+	if ((uint32_t)millis() > wiflyTimeout)
 	{
-	#if DEBUG
+#if DEBUG
 		eMSSerial.println(F("CheckWiFlyTimeout: Checking WiFly association."));
-	#endif
+#endif
 
-		if(!wifly.isAssociated())
+		if (!wifly.isAssociated())
 		{
-		#if DEBUG
+#if DEBUG
 			eMSSerial.println(F("CheckWiFlyTimeout: WiFly not associated! Restarting..."));
-		#endif
-			if(!configureWifly(SUMMER_TIME))
+#endif
+			if (!configureWifly(SUMMER_TIME))
 			{
 				setupWifly();
 			}
@@ -3743,9 +4451,9 @@ void checkWiFlyTimeout()
 		{
 			// rearm timeout (watchdog)
 			wiflyTimeout = (uint32_t)millis() + WIFLY_TIMEOUT;
-		#if DEBUG
+#if DEBUG
 			eMSSerial.println(F("CheckWiFlyTimeout: WiFly associated."));
-		#endif
+#endif
 		}
 	}
 }
@@ -3788,7 +4496,7 @@ void loop()
 	boolean connected = wifly.isConnected();
 
 	//Check if there is a HTTP Request ready to be read
-	if(available && connected)
+	if (available && connected)
 	{
 		//Read the HTTP Request and extract the requested operation
 		operationRequested = readHTTPRequest();
@@ -3797,10 +4505,10 @@ void loop()
 
 		// Update the RTC Time every time an HTTP operation is received
 		wifly.time();
-	#if DEBUG
+#if DEBUG
 		eMSSerial.print(F("Loop: Operation returned:"));
 		eMSSerial.println(operationReturn);
-	#endif
+#endif
 	}
 
 	wifly.forceClose();
