@@ -3,19 +3,23 @@ EMS Bus - Arduino library.
 
 **Calduino** provides functions to communicate through the **EMS Bus** with Buderus / Nefit / Worcester (or any other EMS Bus compatible) boilers. It includes commands for both getting status information (UBA Monitor, DHW Monitor, etc.) and setting new configurations (Set Day/Night Temperature, Set Working Mode, etc.).
 
-To know more about how the **EMS Bus** works have a look at this <a href="https://domoticproject.com/ems-bus-buderus-nefit-boiler/" target="_blank">post</a>. A full working arduino sketch integrating Calduino and <a href="https://github.com/harlequin-tech/WiFlyHQ" target="_blank">WiFly</a> libraries to connect wirelessly with the EMS Bus can be found in this <a href="https://domoticproject.com/calduino-connecting-arduino-ems-bus/" target="_blank">tutorial</a>.
+To know more about how the **EMS Bus** works have a look at this [post](https://domoticproject.com/ems-bus-buderus-nefit-boiler/). A full working arduino sketch integrating Calduino and [WiFly](https://github.com/harlequin-tech/WiFlyHQ) libraries to connect wirelessly with the EMS Bus can be found in this [tutorial](https://domoticproject.com/calduino-connecting-arduino-ems-bus/).
 
-Doxygen documentation available <a href="http://danimaciasperea.github.com/Calduino" target="_blank">here</a>.
+Doxygen documentation available [here](https://danimaciasperea.github.io/Calduino/docs/index.html).
 
 ## Requirements
 To use this library you will need two hardware components:
--   An  **EMS Bus – UART interface circuit**  to convert the EMS Bus signals to TTL levels. Have a look at this <a href="https://domoticproject.com/calduino-connecting-arduino-ems-bus#EMS_Bus_8211_UART_Interface_Circuit" target="_blank">section</a> to build your own circuit.
+-   An  **EMS Bus – UART interface circuit**  to convert the EMS Bus signals to TTL levels. Have a look at this [section](https://domoticproject.com/calduino-connecting-arduino-ems-bus#EMS_Bus_8211_UART_Interface_Circuit) to build your own circuit.
 -   An **Arduino Board** with Atmel ATmega microcontroller such as Arduino One or Mega. Development and debugging will be easier with more than a serial port, so I recommend **Arduino Mega 2560**.
 
 And of course you will need an EMS compatible boiler, as well as access to the EMS Bus.
 
+<p align="center">
+<img src="https://domoticproject.com/wp-content/uploads/2018/04/Calduino_2-768x576.jpg">
+</p>
+
 ## Instalation
-Install as any other <a href="https://www.arduino.cc/en/Guide/Libraries" target="_blanck">Arduino library</a>: unzip the distribution zip file to the libraries sub-folder of your sketchbook.
+Install as any other [Arduino library](https://www.arduino.cc/en/Guide/Libraries): unzip the distribution zip file to the libraries sub-folder of your sketchbook.
 
 ## Examples
 Configure Calduino in the Serial Port 3 of Arduino Mega (pin TX 14 and RX 15) do:
@@ -70,5 +74,5 @@ This project is licensed under the MIT License - see the  [license file](LICENSE
 
 ## Acknowledgments
 
--  EMS Wiki from <a href="https://emswiki.thefischer.net/doku.php" target="_blank">thefisher.net</a>. Without this source I would not have been able to decode the data packages sent through the EMS Bus.
--  The first attemps to communicate with the EMS Bus where done thanks to <a href="https://github.com/bbqkees/Nefit-Buderus-EMS-bus-Arduino-Domoticz" target="_blank">Bbqkees</a>, the NEFITSerial library and his UART Interface Circuit schematic.
+-  EMS Wiki from [thefisher.net](https://emswiki.thefischer.net/doku.php). Without this source I would not have been able to decode the data packages sent through the EMS Bus.
+-   The first attemps to communicate with the EMS Bus where done thanks to [Bbqkees](https://github.com/bbqkees/Nefit-Buderus-EMS-bus-Arduino-Domoticz), the NEFITSerial library and his UART Interface Circuit schematic.
