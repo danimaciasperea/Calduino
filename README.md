@@ -5,7 +5,7 @@ EMS Bus - Arduino library.
 
 To know more about how the **EMS Bus** works have a look at this [post](https://domoticproject.com/ems-bus-buderus-nefit-boiler/). A full working arduino sketch integrating Calduino and [WiFly](https://github.com/harlequin-tech/WiFlyHQ) libraries to connect wirelessly with the EMS Bus can be found in this [tutorial](https://domoticproject.com/calduino-connecting-arduino-ems-bus/).
 
-Doxygen documentation available [here](https://danimaciasperea.github.io/Calduino/docs/index.html).
+Doxygen documentation available [here](https://danimaciasperea.github.io/Calduino/index.html).
 
 ## Requirements
 To use this library you will need two hardware components:
