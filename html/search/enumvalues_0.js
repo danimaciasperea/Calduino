@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['bar',['Bar',['../_calduino_8h.html#a837920b448fff8b3b1c86617f83537d3a6424dbda22da2f105580d1c8095600d3',1,'Calduino.h']]],
+  ['bc_5f10',['BC_10',['../_calduino_8h.html#a414872c624bb3eb10f03bd3a7ece7292a674e42882b67dff4b4f8aa834e43a39d',1,'Calduino.h']]],
+  ['bit',['Bit',['../_calduino_8h.html#a98071c3de31802ffcde6d278f590ce90ab02f2a968aa23e50bbc4ca39abc454f0',1,'Calduino.h']]],
+  ['boiltemp_5ff',['boilTemp_f',['../_calduino_8h.html#a2c1f29b5b956e92e81798536b5c3f7c4a68f82bd991e27c10928a1688d23913e9',1,'Calduino.h']]],
+  ['boiltempidx',['boilTempIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a4413aa3aa22c2674954937f89ad7b95e',1,'Calduino.h']]],
+  ['burngas_5ft',['burnGas_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224aa693e8e1e7cff281fab8fa6476a1bb59',1,'Calduino.h']]],
+  ['burngasidx',['burnGasIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a8ec37ad013f9cbee8d11bff3409353e4',1,'Calduino.h']]],
+  ['burnstarts_5ful',['burnStarts_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa0b183aaa754a1f54df2ec5f2ca2aa0f6',1,'Calduino.h']]],
+  ['burnstartsdhw_5ful',['burnStartsDHW_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa8106d6b0e94593590848f9cc620b181a',1,'Calduino.h']]],
+  ['burnstartsdhwidx',['burnStartsDHWIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a1298d37b0088c80f11add101fb20347a',1,'Calduino.h']]],
+  ['burnstartsidx',['burnStartsIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a8945ee75f418c32ca8f1be2b4ddd9612',1,'Calduino.h']]],
+  ['burnworkmin_5ful',['burnWorkMin_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa76ebd0657c765ce8c513c1f62e57cead',1,'Calduino.h']]],
+  ['burnworkmindhw_5ful',['burnWorkMinDHW_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa9b1a11cdf487e64e08e346bf18ff1be0',1,'Calduino.h']]],
+  ['burnworkmindhwidx',['burnWorkMinDHWIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a799766974a2c0694e396d6f9701bdfd3',1,'Calduino.h']]],
+  ['burnworkminidx',['burnWorkMinIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a02132f65ffd6fa81465360891f740258',1,'Calduino.h']]],
+  ['byte',['Byte',['../_calduino_8h.html#a98071c3de31802ffcde6d278f590ce90a045e9685dc21b201763a4664400598eb',1,'Calduino.h']]]
+];

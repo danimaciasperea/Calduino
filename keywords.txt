@@ -1,0 +1,55 @@
+#######################################
+# Syntax Coloring Map For Calduino.h
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Calduino KEYWORD1
+CalduinoDebug KEYWORD1
+CalduinoSerial KEYWORD1
+EMSSerial KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+available KEYWORD2
+begin KEYWORD2
+bool KEYWORD2
+end KEYWORD2
+flush KEYWORD2
+frameError KEYWORD2
+getCalduinoBitValue KEYWORD2
+getCalduinoByteValue KEYWORD2
+getCalduinoFloatValue KEYWORD2
+getCalduinoSwitchPoint KEYWORD2
+getCalduinoUlongValue KEYWORD2
+peek KEYWORD2
+printCalduinoByteValue KEYWORD2
+printEMSDatagram KEYWORD2
+read KEYWORD2
+setHolidayModeHC KEYWORD2
+setHomeHolidayModeHC KEYWORD2
+setNightSetbackModeHC KEYWORD2
+setNightThresholdOutTempHC KEYWORD2
+setOneTimeDHW KEYWORD2
+setPartyModeHC KEYWORD2
+setPauseModeHC KEYWORD2
+setProgramDHW KEYWORD2
+setProgramHC KEYWORD2
+setProgramPumpDHW KEYWORD2
+setProgramSwitchPoint KEYWORD2
+setProgramTDDHW KEYWORD2
+setRoomTempOffsetHC KEYWORD2
+setSWThresholdTempHC KEYWORD2
+setTemperatureDHW KEYWORD2
+setTemperatureHC KEYWORD2
+setTemperatureTDDHW KEYWORD2
+setWorkModeDHW KEYWORD2
+setWorkModeHC KEYWORD2
+setWorkModePumpDHW KEYWORD2
+setWorkModeTDDHW KEYWORD2
+write KEYWORD2
+writeEOF KEYWORD2

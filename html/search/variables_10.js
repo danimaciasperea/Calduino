@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['ubaflagsdhw',['uBAFlagsDHW',['../_calduino_8cpp.html#a34c51de167ec6d6dc05e2800e38a4532',1,'Calduino.cpp']]],
+  ['ubaflagsdhwvalues',['uBAflagsDHWValues',['../_calduino_8cpp.html#af9f5baba574c635e0edbcff0abbb8bba',1,'Calduino.cpp']]],
+  ['ubamonitordhw',['uBAMonitorDHW',['../_calduino_8cpp.html#a8e40bab96b89407935c18f12217d732c',1,'Calduino.cpp']]],
+  ['ubamonitordhwname',['uBAMonitorDHWName',['../_calduino_8cpp.html#ae850e442fc5e4bf2f9aa57bebc59d117',1,'Calduino.cpp']]],
+  ['ubamonitordhwvalues',['uBAMonitorDHWValues',['../_calduino_8cpp.html#a0c31cbe7ff5da1cbde750dff25a66676',1,'Calduino.cpp']]],
+  ['ubamonitorfast',['uBAMonitorFast',['../_calduino_8cpp.html#a4d555621ce0248e0506cda5f7dd3b6a3',1,'Calduino.cpp']]],
+  ['ubamonitorfastname',['uBAMonitorFastName',['../_calduino_8cpp.html#afcbbdb9651909e4ca6f020178fe087a7',1,'Calduino.cpp']]],
+  ['ubamonitorfastvalues',['uBAMonitorFastValues',['../_calduino_8cpp.html#aeb12f896752814e10d6e6b5bf0ec7903',1,'Calduino.cpp']]],
+  ['ubamonitorslow',['uBAMonitorSlow',['../_calduino_8cpp.html#a024f572d69a961bd620d6af7ef230651',1,'Calduino.cpp']]],
+  ['ubamonitorslowname',['uBAMonitorSlowName',['../_calduino_8cpp.html#a8aa8c8fa95da864cdaba65e97c6d9def',1,'Calduino.cpp']]],
+  ['ubamonitorslowvalues',['uBAMonitorSlowValues',['../_calduino_8cpp.html#abb45fb683b98edd13d6a9bdd49908c41',1,'Calduino.cpp']]],
+  ['ubaparameterdhw',['uBAParameterDHW',['../_calduino_8cpp.html#a40f60ab901c44e19286a2a63dd17478b',1,'Calduino.cpp']]],
+  ['ubaparameterdhwname',['uBAParameterDHWName',['../_calduino_8cpp.html#a9bfdaf71f4d4cfc23a8afd18bd68f66b',1,'Calduino.cpp']]],
+  ['ubaparameterdhwvalues',['uBAParameterDHWValues',['../_calduino_8cpp.html#a6e31e29c032e5e17464dc4bea39e3eba',1,'Calduino.cpp']]],
+  ['ubaworkingmin',['uBAWorkingMin',['../_calduino_8cpp.html#af96f1c5b2187d9b90adfef2c4b40df27',1,'Calduino.cpp']]],
+  ['ubaworkingtime',['uBAWorkingTime',['../_calduino_8cpp.html#af86190c3364418ee93e6c4fa845342d5',1,'Calduino.cpp']]],
+  ['ubaworkingtimename',['uBAWorkingTimeName',['../_calduino_8cpp.html#a1538e6b24a4f1680caa91431005c7ace',1,'Calduino.cpp']]],
+  ['ubaworkingtimevalues',['uBAWorkingTimeValues',['../_calduino_8cpp.html#a905260ee2fa3c2de7d9094d5f14eca9a',1,'Calduino.cpp']]],
+  ['ulongrequests',['uLongRequests',['../_calduino_8cpp.html#a4eca38fc98f717410eba5d74ba91ebe3',1,'Calduino.cpp']]],
+  ['unit',['unit',['../struct_calduino_data.html#ae0b5a011bc175761305e1bcbdfe9039e',1,'CalduinoData']]],
+  ['unsignedlong',['unsignedLong',['../_calduino_8cpp.html#a7a8d6b77a6e952bb830b313aeb331397',1,'Calduino.cpp']]]
+];

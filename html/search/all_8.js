@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['heating_5fcircuits',['HEATING_CIRCUITS',['../_calduino_8h.html#ab0393e787946f69c7b981c4c9e95f4b7',1,'Calduino.h']]],
+  ['heatpmp',['heatPmp',['../_calduino_8cpp.html#a858199e275ea50e53da043528f034228',1,'Calduino.cpp']]],
+  ['heatpmp_5ft',['heatPmp_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224a1a7c75c374f513ee724f59472e0b7210',1,'Calduino.h']]],
+  ['heatpmpidx',['heatPmpIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40aaf23d1765d56376d2ee7ee4b1385d743',1,'Calduino.h']]],
+  ['heatworkmin',['heatWorkMin',['../_calduino_8cpp.html#a1c80cf4582ea6bf7b7685fb49ffa4c50',1,'Calduino.cpp']]],
+  ['heatworkmin_5ful',['heatWorkMin_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fadc184e72ab95767d151d8664c4b8cf18',1,'Calduino.h']]],
+  ['heatworkminidx',['heatWorkMinIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40aaadb9817c2aa35715dd2b7d3b6e66677',1,'Calduino.h']]],
+  ['holimodhc',['holiModHC',['../_calduino_8cpp.html#a005fdd6ac18d322492ea093222e496a5',1,'Calduino.cpp']]],
+  ['holimodhc1_5ft',['holiModHC1_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224a606bbf941376aa84980a57f7afe02323',1,'Calduino.h']]],
+  ['holimodhc2_5ft',['holiModHC2_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224a1ebbb01fadb1db6707d0ffbc6b00e766',1,'Calduino.h']]],
+  ['holimodhc3_5ft',['holiModHC3_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224adae3d90f9cb298ee4e5f91c18503fcf5',1,'Calduino.h']]],
+  ['holimodhc4_5ft',['holiModHC4_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224a15bff5ad3af08a3ad37ee09df699f454',1,'Calduino.h']]],
+  ['holimodhcidx',['holiModHCIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40ac42f13373167646442bd588452632a79',1,'Calduino.h']]],
+  ['hour',['hour',['../struct_switch_point.html#a1c36b657a85a6b431a91339df9615226',1,'SwitchPoint::hour()'],['../_calduino_8cpp.html#a46e47f8d2a23be1b070fae1161f0bb0e',1,'hour():&#160;Calduino.cpp']]],
+  ['hour_5fb',['hour_b',['../_calduino_8h.html#a264a2f0a1c1820b003ae216712022913a5d1310dbce89cd4172ee983582a86038',1,'Calduino.h']]],
+  ['houridx',['hourIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40af3fc5720e3fbd16ad920b12cd4f520c7',1,'Calduino.h']]],
+  ['hourtddhw',['hourTDDHW',['../_calduino_8cpp.html#a96511f9be181238d73ecd2f3e47c892b',1,'Calduino.cpp']]],
+  ['hourtddhw_5fb',['hourTDDHW_b',['../_calduino_8h.html#a264a2f0a1c1820b003ae216712022913ae0366c272fc49d5931b267e82d7f4dc0',1,'Calduino.h']]],
+  ['hourtddhwidx',['hourTDDHWIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a26d2f98fb304eecc547b3bf2f3c88528',1,'Calduino.h']]]
+];
