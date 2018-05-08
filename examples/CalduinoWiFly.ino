@@ -15,7 +15,7 @@
 *	- UART_3 (EMSSerial3) -> Calduino
 *
 *	Get Commands (matches EMSDatagramID enumeration)
-*	-	RC_Datetime					calduino/?op=00			
+*	-	RC_Datetime					calduino/?op=00
 *	-	UBA_Working_Time			calduino/?op=01
 *	-	UBA_Monitor_Fast			calduino/?op=02
 *	-	UBA_Monitor_Slow			calduino/?op=03
@@ -26,23 +26,23 @@
 *	-	Program_DHW					calduino/?op=08
 *	-	Program_Pump_DHW			calduino/?op=09
 *	-	Working_Mode_HC_1			calduino/?op=10
-*	-	Monitor_HC_1				calduino/?op=11  
-*	-	Program_1_HC_1				calduino/?op=12  
-*	-	Program_2_HC_1				calduino/?op=13  
-*	-	Working_Mode_HC_2			calduino/?op=14  
-*	-	Monitor_HC_2				calduino/?op=15  
-*	-	Program_1_HC_2				calduino/?op=16  
-*	-	Program_2_HC_2				calduino/?op=17  
-*	-	Working_Mode_HC_3			calduino/?op=18  
-*	-	Monitor_HC_3				calduino/?op=19  
-*	-	Program_1_HC_3				calduino/?op=20  
-*	-	Program_2_HC_3				calduino/?op=21  
+*	-	Monitor_HC_1				calduino/?op=11
+*	-	Program_1_HC_1				calduino/?op=12
+*	-	Program_2_HC_1				calduino/?op=13
+*	-	Working_Mode_HC_2			calduino/?op=14
+*	-	Monitor_HC_2				calduino/?op=15
+*	-	Program_1_HC_2				calduino/?op=16
+*	-	Program_2_HC_2				calduino/?op=17
+*	-	Working_Mode_HC_3			calduino/?op=18
+*	-	Monitor_HC_3				calduino/?op=19
+*	-	Program_1_HC_3				calduino/?op=20
+*	-	Program_2_HC_3				calduino/?op=21
 *	-	Working_Mode_HC_4			calduino/?op=22
-*	-	Monitor_HC_4				calduino/?op=23  
-*	-	Program_1_HC_4				calduino/?op=24  
-*	-	Program_2_HC_4				calduino/?op=25  
-*	-	Monitor_MM_10				calduino/?op=26  
-*	-	All_Monitors				calduino/?op=29  
+*	-	Monitor_HC_4				calduino/?op=23
+*	-	Program_1_HC_4				calduino/?op=24
+*	-	Program_2_HC_4				calduino/?op=25
+*	-	Monitor_MM_10				calduino/?op=26
+*	-	All_Monitors				calduino/?op=29
 *	
 *	Set Commands
 *	-	Set Working Mode HC			calduino/?op=30&hc=X&wm=Y		hc - Heating Circuit 1/2/3/4	wm - Working Mode 0 = night/ 1 = day/ 2 = auto  
