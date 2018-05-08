@@ -3,14 +3,14 @@ EMS Bus - Arduino library.
 
 **Calduino** provides functions to communicate through the **EMS Bus** with Buderus / Nefit / Worcester (or any other EMS Bus compatible) boilers. It includes commands for both getting status information (UBA Monitor, DHW Monitor, etc.) and setting new configurations (Set Day/Night Temperature, Set Working Mode, etc.).
 
-To know more about how the **EMS Bus** works have a look at this [post](https://domoticproject.com/ems-bus-buderus-nefit-boiler/). A full working arduino sketch integrating Calduino and [WiFly](https://github.com/harlequin-tech/WiFlyHQ) libraries to connect wirelessly with the EMS Bus can be found in this [tutorial](https://domoticproject.com/calduino-connecting-arduino-ems-bus/).
+To know more about how the **EMS Bus** works have a look at this [post](https://domoticproject.com/ems-bus-buderus-nefit-boiler/). A full working Arduino sketch integrating Calduino and [WiFly](https://github.com/harlequin-tech/WiFlyHQ) libraries to connect wirelessly with the EMS Bus can be found in this [tutorial](https://domoticproject.com/calduino-connecting-arduino-ems-bus/).
 
-Doxygen documentation available [here](https://danimaciasperea.github.io/Calduino/index.html).
+Doxygen documentation is available [here](https://danimaciasperea.github.io/Calduino/index.html).
 
 ## Requirements
-To use this library you will need two hardware components:
--   An  **EMS Bus – UART interface circuit**  to convert the EMS Bus signals to TTL levels. Have a look at this [section](https://domoticproject.com/calduino-connecting-arduino-ems-bus#EMS_Bus_8211_UART_Interface_Circuit) to build your own circuit.
--   An **Arduino Board** with Atmel ATmega microcontroller such as Arduino One or Mega. Development and debugging will be easier with more than a serial port, so I recommend **Arduino Mega 2560**.
+To use this library you need two hardware components:
+-   An  **EMS Bus – UART interface circuit**  to convert the EMS Bus signals to UART TTL levels. Have a look at this [section](https://domoticproject.com/calduino-connecting-arduino-ems-bus#EMS_Bus_8211_UART_Interface_Circuit) to build your own circuit.
+-   An **Arduino Board** with Atmel ATmega microcontroller such as Arduino One or Mega. Development and debugging will be easier with more than one serial port, so I recommend **Arduino Mega 2560**.
 
 And of course you will need an EMS compatible boiler, as well as access to the EMS Bus.
 
