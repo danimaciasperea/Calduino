@@ -62,9 +62,13 @@ Set working mode in heating circuit 2 to night:
 
 	calduino.setWorkModeHC(2, 0);
 
+Set night temperature in heating circuit 1 to 21.5℃:
+
+	calduino.setTemperatureHC(1, 0, 43);
+	
 Set DHW temperature to 50℃:
 
-	calduino.setTemperatureDHW(40);
+	calduino.setTemperatureDHW(50);
 
 ## License
 This project is licensed under the MIT License - see the  [license file](LICENSE.md) for details
