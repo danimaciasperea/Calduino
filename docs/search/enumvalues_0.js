@@ -14,6 +14,8 @@ var searchData=
   ['burnworkmin_5ful',['burnWorkMin_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa76ebd0657c765ce8c513c1f62e57cead',1,'Calduino.h']]],
   ['burnworkmindhw_5ful',['burnWorkMinDHW_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa9b1a11cdf487e64e08e346bf18ff1be0',1,'Calduino.h']]],
   ['burnworkmindhwidx',['burnWorkMinDHWIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a799766974a2c0694e396d6f9701bdfd3',1,'Calduino.h']]],
+  ['burnworkminh_5ful',['burnWorkMinH_ul',['../_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa04d1602f33cf70340c40c6b31460cb77',1,'Calduino.h']]],
+  ['burnworkminhidx',['burnWorkMinHIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a781a34cc1ec51e7f025d48856269aa27',1,'Calduino.h']]],
   ['burnworkminidx',['burnWorkMinIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a02132f65ffd6fa81465360891f740258',1,'Calduino.h']]],
   ['byte',['Byte',['../_calduino_8h.html#a98071c3de31802ffcde6d278f590ce90a045e9685dc21b201763a4664400598eb',1,'Calduino.h']]]
 ];

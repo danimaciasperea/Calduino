@@ -95,8 +95,6 @@ $(document).ready(function(){initNavTree('class_calduino.html','');});
 <div class="title">Calduino Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p><code>#include &lt;<a class="el" href="_calduino_8h_source.html">Calduino.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -104,10 +102,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac4c3f9ebdff65a3b7a2102b0d2a87098"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24a1940458bcef635b4691ac6d9c2bab"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a24a1940458bcef635b4691ac6d9c2bab">begin</a> (<a class="el" href="class_e_m_s_serial.html">EMSSerial</a> *_calduinoSerial, Stream *debugSerial=NULL)</td></tr>
 <tr class="separator:a24a1940458bcef635b4691ac6d9c2bab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa17043f5a7e0ea1b09e65c321890567b"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aa17043f5a7e0ea1b09e65c321890567b">printEMSDatagram</a> (<a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a> eMSDatagramID, <a class="el" href="_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40">DatagramDataIndex</a> datagramDataIndex=<a class="el" href="_calduino_8h.html#a48e49bfe7b106d9356d27403982bcf7c">ERROR_VALUE</a>)</td></tr>
+<tr class="memitem:aa17043f5a7e0ea1b09e65c321890567b"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aa17043f5a7e0ea1b09e65c321890567b">printEMSDatagram</a> (EMSDatagramID eMSDatagramID, <a class="el" href="_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40">DatagramDataIndex</a> datagramDataIndex=ERROR_VALUE)</td></tr>
 <tr class="separator:aa17043f5a7e0ea1b09e65c321890567b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a44bc2cce9c63d1a852edb17f68d09d2a"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a44bc2cce9c63d1a852edb17f68d09d2a">printCalduinoByteValue</a> (<a class="el" href="_calduino_8h.html#a264a2f0a1c1820b003ae216712022913">ByteRequest</a> typeIdx)</td></tr>
-<tr class="separator:a44bc2cce9c63d1a852edb17f68d09d2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad60c4709b766d0af44acbfd18beb8302"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#ad60c4709b766d0af44acbfd18beb8302">getCalduinoByteValue</a> (<a class="el" href="_calduino_8h.html#a264a2f0a1c1820b003ae216712022913">ByteRequest</a> typeIdx)</td></tr>
 <tr class="separator:ad60c4709b766d0af44acbfd18beb8302"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab195793220c3481bd4ec22c4ffd63222"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#ab195793220c3481bd4ec22c4ffd63222">getCalduinoFloatValue</a> (<a class="el" href="_calduino_8h.html#a2c1f29b5b956e92e81798536b5c3f7c4">FloatRequest</a> typeIdx)</td></tr>
@@ -116,7 +112,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2955832b12b0f6a56a94dc7b511644b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2ac9fba4c4b52d5aa98c0d9a09a27cc3"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a2ac9fba4c4b52d5aa98c0d9a09a27cc3">getCalduinoBitValue</a> (<a class="el" href="_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224">BitRequest</a> typeIdx)</td></tr>
 <tr class="separator:a2ac9fba4c4b52d5aa98c0d9a09a27cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b89d928c9e48735c12f84398dc2fda5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_switch_point.html">SwitchPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a7b89d928c9e48735c12f84398dc2fda5">getCalduinoSwitchPoint</a> (<a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a> selProgram, byte switchPointID)</td></tr>
+<tr class="memitem:a7b89d928c9e48735c12f84398dc2fda5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_switch_point.html">SwitchPoint</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a7b89d928c9e48735c12f84398dc2fda5">getCalduinoSwitchPoint</a> (EMSDatagramID selProgram, byte switchPointID)</td></tr>
 <tr class="separator:a7b89d928c9e48735c12f84398dc2fda5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a640816eca9757ffa903135a5bf09d3c0"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a640816eca9757ffa903135a5bf09d3c0">setWorkModeHC</a> (byte selHC, byte selMode)</td></tr>
 <tr class="separator:a640816eca9757ffa903135a5bf09d3c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,9 +132,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ae02b8a42a853ec93ca79c4ac475f8d93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8e7d0e5a415dc231c85a729fac53575"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#af8e7d0e5a415dc231c85a729fac53575">setPartyModeHC</a> (byte selHC, byte duration)</td></tr>
 <tr class="separator:af8e7d0e5a415dc231c85a729fac53575"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa1c105c290d736b9c9fab42dcab8b42d"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aa1c105c290d736b9c9fab42dcab8b42d">setHolidayModeHC</a> (byte selHC, byte <a class="el" href="_calduino_8cpp.html#a6fa09065fc2b5b263adffdc5e4aff3ad">startHolidayDay</a>, byte startHoldidayMonth, byte <a class="el" href="_calduino_8cpp.html#a7d45386e8b8498f643afa32259ecb5c9">startHolidayYear</a>, byte <a class="el" href="_calduino_8cpp.html#a30ec07efad2f759659f77b73fe6ada79">endHolidayDay</a>, byte endHoldidayMonth, byte <a class="el" href="_calduino_8cpp.html#a0029994f15c03bee1226decd464485fe">endHolidayYear</a>)</td></tr>
+<tr class="memitem:aa1c105c290d736b9c9fab42dcab8b42d"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aa1c105c290d736b9c9fab42dcab8b42d">setHolidayModeHC</a> (byte selHC, byte startHolidayDay, byte startHoldidayMonth, byte startHolidayYear, byte endHolidayDay, byte endHoldidayMonth, byte endHolidayYear)</td></tr>
 <tr class="separator:aa1c105c290d736b9c9fab42dcab8b42d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a960fe75cf338510e3be560cf7c8afa28"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a960fe75cf338510e3be560cf7c8afa28">setHomeHolidayModeHC</a> (byte selHC, byte <a class="el" href="_calduino_8cpp.html#a2a2441602bbd5b285e69b5b9156f6252">startHomeHolidayDay</a>, byte startHomeHoldidayMonth, byte <a class="el" href="_calduino_8cpp.html#ac6095b1079a95b2316d34d9a014d5915">startHomeHolidayYear</a>, byte <a class="el" href="_calduino_8cpp.html#ae228793fdcd89166ca43ab689b65c8f0">endHomeHolidayDay</a>, byte endHomeHoldidayMonth, byte <a class="el" href="_calduino_8cpp.html#a8ba7867492ed408b55939969c08275d4">endHomeHolidayYear</a>)</td></tr>
+<tr class="memitem:a960fe75cf338510e3be560cf7c8afa28"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a960fe75cf338510e3be560cf7c8afa28">setHomeHolidayModeHC</a> (byte selHC, byte startHomeHolidayDay, byte startHomeHoldidayMonth, byte startHomeHolidayYear, byte endHomeHolidayDay, byte endHomeHoldidayMonth, byte endHomeHolidayYear)</td></tr>
 <tr class="separator:a960fe75cf338510e3be560cf7c8afa28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a132662aa16549fe848c5cff20fda59d9"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a132662aa16549fe848c5cff20fda59d9">setWorkModeDHW</a> (byte selMode)</td></tr>
 <tr class="separator:a132662aa16549fe848c5cff20fda59d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -154,21 +150,24 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6fb93c56a8abb8a7b4b13d11246c7d77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37af3916c6e5246d8c32c362e0a4996c"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a37af3916c6e5246d8c32c362e0a4996c">setOneTimeDHW</a> (boolean selMode)</td></tr>
 <tr class="separator:a37af3916c6e5246d8c32c362e0a4996c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae32e1440396ad2fcec221712a7c1b8ec"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#ae32e1440396ad2fcec221712a7c1b8ec">setWorkModeTDDHW</a> (boolean selMode)</td></tr>
-<tr class="separator:ae32e1440396ad2fcec221712a7c1b8ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d7f06ee7ac696b87776173371a709d3"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a7d7f06ee7ac696b87776173371a709d3">setProgramTDDHW</a> (byte dayTherDisDHW, byte hourTherDisDHW)</td></tr>
-<tr class="separator:a7d7f06ee7ac696b87776173371a709d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae26627794b881aaa744763974dc3acd"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aae26627794b881aaa744763974dc3acd">setProgramSwitchPoint</a> (<a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a> selProgram, byte switchPointID, byte operationSwitchPoint, byte daySwitchPoint, byte hourSwitchPoint, byte minuteSwitchPoint)</td></tr>
+<tr class="memitem:a35fd656d8fd8c992cd4c50849a4818c1"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a35fd656d8fd8c992cd4c50849a4818c1">setWorkModeTDDHW</a> (byte selMode)</td></tr>
+<tr class="separator:a35fd656d8fd8c992cd4c50849a4818c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac490f3d2daa3491a9b16977c91c4922e"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#ac490f3d2daa3491a9b16977c91c4922e">setDayTDDHW</a> (byte dayTherDisDHW)</td></tr>
+<tr class="separator:ac490f3d2daa3491a9b16977c91c4922e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adffebb384d0b0f5580c74d7a715389d6"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#adffebb384d0b0f5580c74d7a715389d6">setHourTDDHW</a> (byte hourTherDisDHW)</td></tr>
+<tr class="separator:adffebb384d0b0f5580c74d7a715389d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae26627794b881aaa744763974dc3acd"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#aae26627794b881aaa744763974dc3acd">setProgramSwitchPoint</a> (EMSDatagramID selProgram, byte switchPointID, byte operationSwitchPoint, byte daySwitchPoint, byte hourSwitchPoint, byte minuteSwitchPoint)</td></tr>
 <tr class="separator:aae26627794b881aaa744763974dc3acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a9b81b2e8db249a8d386e37ff70cb582a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_calduino_8h.html#ae87070e51f6e5b164e4356dcc86b1c3c">PrintFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_calduino.html#a9b81b2e8db249a8d386e37ff70cb582a">printFormat</a></td></tr>
+<tr class="memitem:a9b81b2e8db249a8d386e37ff70cb582a"><td class="memItemLeft" align="right" valign="top"><a id="a9b81b2e8db249a8d386e37ff70cb582a"></a>
+<a class="el" href="_calduino_8h.html#ae87070e51f6e5b164e4356dcc86b1c3c">PrintFormat</a>&#160;</td><td class="memItemRight" valign="bottom"><b>printFormat</b></td></tr>
 <tr class="separator:a9b81b2e8db249a8d386e37ff70cb582a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
-<p class="definition">Definition at line <a class="el" href="_calduino_8h_source.html#l00635">635</a> of file <a class="el" href="_calduino_8h_source.html">Calduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8h_source.html#l00630">630</a> of file <a class="el" href="_calduino_8h_source.html">Calduino.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ac4c3f9ebdff65a3b7a2102b0d2a87098"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac4c3f9ebdff65a3b7a2102b0d2a87098">&#9670;&nbsp;</a></span>Calduino()</h2>
@@ -186,7 +185,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p><a class="el" href="class_calduino.html">Calduino</a> constructor method. Initialize variables. </p>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01304">1304</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01299">1299</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -226,7 +225,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if there is communication with the EMS Buffer, false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01320">1320</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01315">1315</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -254,7 +253,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The value of the <a class="el" href="class_calduino.html">Calduino</a> Data requested, false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01855">1855</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01849">1849</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -282,7 +281,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The value of the <a class="el" href="class_calduino.html">Calduino</a> Data requested, ERROR_VALUE otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01738">1738</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01732">1732</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -310,7 +309,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The value of the <a class="el" href="class_calduino.html">Calduino</a> Data requested, NAN otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01777">1777</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01771">1771</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -323,7 +322,7 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="struct_switch_point.html">SwitchPoint</a> Calduino::getCalduinoSwitchPoint </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a>&#160;</td>
+          <td class="paramtype">EMSDatagramID&#160;</td>
           <td class="paramname"><em>selProgram</em>, </td>
         </tr>
         <tr>
@@ -349,7 +348,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The value of the <a class="el" href="class_calduino.html">Calduino</a> Data requested, false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01895">1895</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01889">1889</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -377,25 +376,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The value of the <a class="el" href="class_calduino.html">Calduino</a> Data requested, NAN otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01816">1816</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a44bc2cce9c63d1a852edb17f68d09d2a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a44bc2cce9c63d1a852edb17f68d09d2a">&#9670;&nbsp;</a></span>printCalduinoByteValue()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">boolean Calduino::printCalduinoByteValue </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="_calduino_8h.html#a264a2f0a1c1820b003ae216712022913">ByteRequest</a>&#160;</td>
-          <td class="paramname"><em>typeIdx</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01810">1810</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -408,14 +389,14 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">boolean Calduino::printEMSDatagram </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a>&#160;</td>
+          <td class="paramtype">EMSDatagramID&#160;</td>
           <td class="paramname"><em>eMSDatagramID</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40">DatagramDataIndex</a>&#160;</td>
-          <td class="paramname"><em>datagramDataIndex</em> = <code><a class="el" href="_calduino_8h.html#a48e49bfe7b106d9356d27403982bcf7c">ERROR_VALUE</a></code>&#160;</td>
+          <td class="paramname"><em>datagramDataIndex</em> = <code>ERROR_VALUE</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -434,7 +415,35 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01944">1944</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l01936">1936</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+
+</div>
+</div>
+<a id="ac490f3d2daa3491a9b16977c91c4922e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac490f3d2daa3491a9b16977c91c4922e">&#9670;&nbsp;</a></span>setDayTDDHW()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">boolean Calduino::setDayTDDHW </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>dayTDDHW</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Send an EMS command to change the thermal disinfection DHW running day. It will run once per week at the selected daySwitchPoint and hour, or once per day if dayTDDHW is 7.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dayTDDHW</td><td>Day of the week to run the thermal disinfection (7 is everyday).</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02562">2562</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -508,7 +517,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02331">2331</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02327">2327</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -582,7 +591,35 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02370">2370</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02366">2366</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+
+</div>
+</div>
+<a id="adffebb384d0b0f5580c74d7a715389d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adffebb384d0b0f5580c74d7a715389d6">&#9670;&nbsp;</a></span>setHourTDDHW()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">boolean Calduino::setHourTDDHW </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>hourTDDHW</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Send an EMS command to change the thermal disinfection DHW program. It will run once per week at the selected daySwitchPoint and hour, or once per day if dayTDDHW is 7.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">hourTDDHW</td><td>Hour of the week to run the thermal disinfection.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02585">2585</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -621,7 +658,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02197">2197</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02193">2193</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -660,7 +697,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02224">2224</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02220">2220</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -688,7 +725,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02632">2632</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02652">2652</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -727,7 +764,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02301">2301</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02297">2297</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -766,7 +803,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02275">2275</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02271">2271</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -794,7 +831,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02496">2496</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02492">2492</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -833,7 +870,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02145">2145</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02141">2141</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -861,7 +898,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02520">2520</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02516">2516</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -874,7 +911,7 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">boolean Calduino::setProgramSwitchPoint </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001ad">EMSDatagramID</a>&#160;</td>
+          <td class="paramtype">EMSDatagramID&#160;</td>
           <td class="paramname"><em>selProgram</em>, </td>
         </tr>
         <tr>
@@ -928,46 +965,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02594">2594</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
-
-</div>
-</div>
-<a id="a7d7f06ee7ac696b87776173371a709d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7d7f06ee7ac696b87776173371a709d3">&#9670;&nbsp;</a></span>setProgramTDDHW()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">boolean Calduino::setProgramTDDHW </td>
-          <td>(</td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>dayTDDHW</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>hourTDDHW</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Send an EMS command to change the thermal disinfection DHW program. It will run once per week at the selected daySwitchPoint and hour, or once per day if dayTDDHW is 7.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">dayTDDHW</td><td>Day of the week to run the thermal disinfection (7 is everyday). </td></tr>
-    <tr><td class="paramname">hourTDDHW</td><td>Hour of the week to run the thermal disinfection.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02564">2564</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02614">2614</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1006,7 +1004,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02250">2250</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02246">2246</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1045,7 +1043,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02171">2171</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02167">2167</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1073,7 +1071,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02448">2448</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02444">2444</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1119,7 +1117,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02113">2113</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02109">2109</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1147,7 +1145,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02472">2472</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02468">2468</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1175,7 +1173,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02402">2402</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02398">2398</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1214,7 +1212,7 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02086">2086</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02082">2082</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
@@ -1242,12 +1240,12 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02425">2425</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02421">2421</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>
-<a id="ae32e1440396ad2fcec221712a7c1b8ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae32e1440396ad2fcec221712a7c1b8ec">&#9670;&nbsp;</a></span>setWorkModeTDDHW()</h2>
+<a id="a35fd656d8fd8c992cd4c50849a4818c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35fd656d8fd8c992cd4c50849a4818c1">&#9670;&nbsp;</a></span>setWorkModeTDDHW()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1255,7 +1253,7 @@ Public Attributes</h2></td></tr>
         <tr>
           <td class="memname">boolean Calduino::setWorkModeTDDHW </td>
           <td>(</td>
-          <td class="paramtype">boolean&#160;</td>
+          <td class="paramtype">byte&#160;</td>
           <td class="paramname"><em>selMode</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1264,30 +1262,13 @@ Public Attributes</h2></td></tr>
 <p>Send an EMS command to change the thermal disinfection DHW working mode.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">selMode</td><td>True to enable thermal disinfection DHW function, false to disable it.</td></tr>
+    <tr><td class="paramname">selMode</td><td>255 to enable thermal disinfection DHW function, 0 to disable it.</td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if it succeeds, false if it fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02543">2543</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
-
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a9b81b2e8db249a8d386e37ff70cb582a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b81b2e8db249a8d386e37ff70cb582a">&#9670;&nbsp;</a></span>printFormat</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="_calduino_8h.html#ae87070e51f6e5b164e4356dcc86b1c3c">PrintFormat</a> Calduino::printFormat</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="_calduino_8h_source.html#l00689">689</a> of file <a class="el" href="_calduino_8h_source.html">Calduino.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_calduino_8cpp_source.html#l02539">2539</a> of file <a class="el" href="_calduino_8cpp_source.html">Calduino.cpp</a>.</p>
 
 </div>
 </div>

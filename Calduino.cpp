@@ -52,7 +52,7 @@
 #define MAX_SETBACK_MODE 3
 #define MAX_PROGRAM 10
 #define MAX_DHW_TEMPERATURE 80
-#define MIN_DHW_TEMPERATURE 30
+#define MIN_DHW_TEMPERATURE 40
 #define MAX_TEMPERATURE 29
 #define MIN_TEMPERATURE 6
 #define MAX_ROOM_TEMPERATURE_OFFSET 5
@@ -76,7 +76,7 @@
 #define TEXT_BUFFER_SIZE 40
 #define EMS_DATAGRAM_OVERHEAD 6
 #define EMS_MAX_WAIT_TIME 1000
-#define RETRY_FACTOR 5
+#define RETRY_FACTOR 4
 
 /* Message size*/
 #define RC_DATETIME_VALUES_COUNT 6
@@ -705,7 +705,7 @@ prog_char burnGas[] = { "BurnGas" };
 prog_char fanWork[] = { "FanWork" };
 prog_char ignWork[] = { "IgnWork" };
 prog_char heatPmp[] = { "HeatPmp" };
-prog_char threeWayValveDHW[] = { "3WayValveDHW" };
+prog_char threeWayValveDHW[] = { "Way3ValveDHW" };
 prog_char circDHW[] = { "CircDHW" };
 prog_char srvCode1[] = { "SrvCode1" };
 prog_char srvCode2[] = { "SrvCode2" };
@@ -739,7 +739,7 @@ prog_char boilTemp[] = { "BoilTemp" };
 prog_char pumpMod[] = { "PumpMod" };
 prog_char burnStarts[] = { "BurnStarts" };
 prog_char burnWorkMin[] = { "BurnWorkMin" };
-prog_char heatWorkMin[] = { "HeatWorkMin" };
+prog_char burnWorkMinH[] = { "BurnWorkMinH" };
 
 const PROGMEM CalduinoData uBAMonitorSlowValues[] = {
 	{extTemp, CalduinoEncodeType::Float, CalduinoUnit::Celsius, 4, 0, 2, 10},
@@ -747,7 +747,7 @@ const PROGMEM CalduinoData uBAMonitorSlowValues[] = {
 	{pumpMod, CalduinoEncodeType::Byte, CalduinoUnit::Percentage, 13},
 	{burnStarts, CalduinoEncodeType::ULong, CalduinoUnit::Times, 14},
 	{burnWorkMin, CalduinoEncodeType::ULong, CalduinoUnit::Minute, 17},
-	{heatWorkMin, CalduinoEncodeType::ULong, CalduinoUnit::Minute, 23}
+	{burnWorkMinH, CalduinoEncodeType::ULong, CalduinoUnit::Minute, 23}
 };
 
 const PROGMEM EMSDatagram uBAMonitorSlow = { uBAMonitorSlowName, MessageID::UBA_Monitor_Slow_ID, DeviceID::UBA, UBA_MONITOR_SLOW_MESSAGE_SIZE, UBA_MONITOR_SLOW_VALUES_COUNT, uBAMonitorSlowValues };
@@ -755,7 +755,7 @@ const PROGMEM EMSDatagram uBAMonitorSlow = { uBAMonitorSlowName, MessageID::UBA_
 /** UBA Parameter DHW Datagram */
 prog_char uBAParameterDHWName[] = { "UBAParameterDHW" };
 prog_char selTempDHW[] = { "SelTempDHW" };
-prog_char tempTDDHW[] = { "TempTDDHW" };
+prog_char tempTDDHW[] = { "SelTempTDDHW" };
 
 const PROGMEM CalduinoData uBAParameterDHWValues[] = {
 	{selTempDHW, CalduinoEncodeType::Byte, CalduinoUnit::Celsius, 6},
@@ -976,7 +976,7 @@ const PROGMEM EMSDatagram programPumpDHW = { programPumpDHWName, MessageID::Prog
 prog_char monitorMM10Name[] = { "MonitorMM10" };
 prog_char selImpTempMM10[] = { "SelImpTempMM10" };
 prog_char curImpTempMM10[] = { "CurImpTempMM10" };
-prog_char statusMM10[] = { "StatusMM10" };
+prog_char statusMM10[] = { "ModMM10" };
 
 const PROGMEM CalduinoData monitorMM10Values[] = {
 	{selImpTempMM10, CalduinoEncodeType::Byte, CalduinoUnit::Celsius, 4},
@@ -1159,7 +1159,7 @@ const PROGMEM CalduinoDataRequest uLongRequests[] =
 	{ &uBAWorkingTimeValues[uBAWorkingMinIdx], &uBAWorkingTime },
 	{ &uBAMonitorSlowValues[burnStartsIdx], &uBAMonitorSlow },
 	{ &uBAMonitorSlowValues[burnWorkMinIdx], &uBAMonitorSlow },
-	{ &uBAMonitorSlowValues[heatWorkMinIdx], &uBAMonitorSlow },
+	{ &uBAMonitorSlowValues[burnWorkMinHIdx], &uBAMonitorSlow },
 	{ &uBAMonitorDHWValues[burnStartsDHWIdx], &uBAMonitorDHW },
 	{ &uBAMonitorDHWValues[burnWorkMinDHWIdx], &uBAMonitorDHW },
 };
@@ -1194,38 +1194,33 @@ void EMSDatagram::printMessageName(char* str, boolean header, PrintFormat printF
 	}
 }
 
-
 /**
- * Composes a formatted string with the EMS Datagram return status sending the output to a char
- * array pointed by str. If the operation status was false (failed) the return tag will be 0.
- * Otherwise it will contain arduino uptime.
+ * Composes a formatted string with the EMS Datagram error status sending the output to a char
+ * array pointed by str.
  *
- * @param [out]	str			   	- pointer to an array of char elements where the resulting
- * 									string is stored.
- * @param 	   	operationStatus	- whether the EMSDatagram has been correctly obtained or not.
- * @param 	   	printFormat	   	- selected printing format.
+ * @param [out]	str		   	- pointer to an array of char elements where the resulting
+ * 								string is stored.
+ * @param 	   	printFormat	- selected printing format.
  */
 
-void EMSDatagram::printReturnTag(char* str, boolean operationStatus, PrintFormat printFormat)
+void EMSDatagram::printErrorTag(char* str, PrintFormat printFormat)
 {
-	unsigned long time = (operationStatus ? (unsigned long)(millis()/1000) : 0);
-
 	// compose the output string according to the printFormat
 	switch (printFormat)
 		{
 		case PrintFormat::NoUnit:
 		{
-			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("%S: %lu"), returnTag, time);
+			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("%S: %d"), returnTag, 0);
 			break;
 		}
 		case PrintFormat::XML:
 		{
-			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("<%S>%lu</%S>"), returnTag, time, returnTag);
+			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("<%S>%d</%S>"), returnTag, 0, returnTag);
 			break;
 		}
 		case PrintFormat::Standard:
 		{
-			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("%S: %lu %S"), returnTag, time, calduinoUnits[Seconds]);
+			snprintf_P(str, TEXT_BUFFER_SIZE, PSTR("%S: %d"), returnTag, 0);
 			break;
 		}
 	}
@@ -1527,7 +1522,6 @@ boolean Calduino::sendRequest(byte *outEMSBuffer)
 boolean Calduino::getEMSCommand(byte *inEMSBuffer, byte destinationID, byte messageID, byte length, byte offset = 0)
 {
 	byte outEMSBuffer[OUT_EMS_BUFFER_SIZE];
-	byte retry = RETRY_FACTOR;
 	unsigned long timeout;
 
 	// load outEMSBuffer with corresponding values.
@@ -1560,7 +1554,7 @@ boolean Calduino::getEMSCommand(byte *inEMSBuffer, byte destinationID, byte mess
 			timeout = millis() + EMSMaxWaitTime;
 
 			// wait until timeout or there is some new data in the EMS-Bus
-			retry: while ((millis() < timeout) && (!calduinoSerial.available())) {}
+			while ((millis() < timeout) && (!calduinoSerial.available())) {}
 
 			// if there is data to be read
 			if (calduinoSerial.available())
@@ -1716,7 +1710,7 @@ boolean Calduino::getEMSBuffer(byte* inEMSBuffer, EMSDatagram eMSDatagram, byte 
 	boolean operationStatus;
 
 	// configure a timeout
-	unsigned long timeout = (long)millis() + EMSMaxWaitTime * RETRY_FACTOR;
+	unsigned long timeout = (long)millis() + EMSMaxWaitTime * RETRY_FACTOR * 2;
 
 	// get the EMS Datagram Bytes, repeat operation if failed until timeout
 	do
@@ -1926,7 +1920,6 @@ SwitchPoint Calduino::getCalduinoSwitchPoint(EMSDatagramID selProgram, byte swit
 	return result;
 }
 
-
 /**
  * Get the EMS Datagram passed as parameter by sending a get EMS command and parsing the bytes
  * obtained. If datagramDataIndex is ERROR_VALUE, get the whole datagram. Get only the Data
@@ -1935,8 +1928,7 @@ SwitchPoint Calduino::getCalduinoSwitchPoint(EMSDatagramID selProgram, byte swit
  *
  * @param	eMSDatagramID	 	- The EMS Datagram ID to be obtained.
  * @param	datagramDataIndex	- (Optional) If not ERROR_VALUE, the position that the data to be
- * 								recovered occupies in the
- * 									calduinoDataValues array.
+ * 								recovered occupies in the calduinoDataValues array.
  *
  * @return	True if it succeeds, false otherwise.
  */
@@ -1996,10 +1988,12 @@ boolean Calduino::printEMSDatagram(EMSDatagramID eMSDatagramID, DatagramDataInde
 		}
 
 	}
-
-	// print the EMS Datagram Return Tag
-	eMSDatagram.printReturnTag(textBuffer, operationStatus, printFormat);
-	DPRINTLN(textBuffer);
+	else
+	{
+		// print the EMS Datagram Error Tag
+		eMSDatagram.printErrorTag(textBuffer, printFormat);
+		DPRINTLN(textBuffer);
+	}
 
 	// print the EMS Datagram Tail Tag
 	eMSDatagram.printMessageName(textBuffer, false, printFormat);
@@ -2061,10 +2055,12 @@ boolean Calduino::updateEMSDatagram(EMSDatagramID eMSDatagramID, DatagramDataInd
 		calduinoData.printfValue(textBuffer, value, printFormat);
 		DPRINTLN(textBuffer);
 	}
-
-	// print the EMS Datagram Return Tag
-	eMSDatagram.printReturnTag(textBuffer, operationStatus, printFormat);
-	DPRINTLN(textBuffer);
+	else
+	{
+		// print the EMS Datagram Error Tag
+		eMSDatagram.printErrorTag(textBuffer, printFormat);
+		DPRINTLN(textBuffer);
+	}
 
 	// print the EMS Datagram Tail Tag
 	eMSDatagram.printMessageName(textBuffer, false, printFormat);
@@ -2535,41 +2531,65 @@ boolean Calduino::setProgramPumpDHW(byte selProgram)
 /**
  * Send an EMS command to change the thermal disinfection DHW working mode.
  *
- * @param	selMode	True to enable thermal disinfection DHW function, false to disable it.
+ * @param	selMode	255 to enable thermal disinfection DHW function, 0 to disable it.
  *
  * @return	True if it succeeds, false if it fails.
  */
 
-boolean Calduino::setWorkModeTDDHW(boolean selMode)
+boolean Calduino::setWorkModeTDDHW(byte selMode)
 {
 	boolean operationStatus = false;
 	
-	// workModeTDDHW is in position 4 of eMSDatagram.Values array in Working_Mode_DHW
-	operationStatus = updateEMSDatagram(EMSDatagramID::Working_Mode_DHW, DatagramDataIndex::workModeTDDHWIdx, (selMode ? 255 : 0));
-
+	// evaluate if the selected mode exists (0 or 255)
+	if ((selMode == 0) || (selMode == ERROR_VALUE))
+	{
+		// workModeTDDHW is in position 4 of eMSDatagram.Values array in Working_Mode_DHW
+		operationStatus = updateEMSDatagram(EMSDatagramID::Working_Mode_DHW, DatagramDataIndex::workModeTDDHWIdx, selMode);
+	}
 	return operationStatus;
 }
 
 
 /**
- * Send an EMS command to change the thermal disinfection DHW program. It will run once per week
+ * Send an EMS command to change the thermal disinfection DHW running day. It will run once per week
  * at the selected daySwitchPoint and hour, or once per day if dayTDDHW is 7.
  *
  * @param	dayTDDHW 	Day of the week to run the thermal disinfection (7 is everyday).
- * @param	hourTDDHW	Hour of the week to run the thermal disinfection.
  *
  * @return	True if it succeeds, false if it fails.
  */
 
-boolean Calduino::setProgramTDDHW(byte dayTDDHW, byte hourTDDHW)
+boolean Calduino::setDayTDDHW(byte dayTDDHW)
 {
 	boolean operationStatus = false;
 
-	// evaluate if the selected dayTDDHW and hourTDDHW are correct
-	if ((dayTDDHW <= MAX_DAY_WEEK) && (hourTDDHW < MAX_HOUR_DAY))
+	// evaluate if the selected dayTDDHW is correct
+	if (dayTDDHW <= MAX_DAY_WEEK)
 	{
-		// dayTDDHW is in position 5 and desHourDHW in position 6 of eMSDatagram.Values array in Working_Mode_DHW
+		// dayTDDHW is in position 5 of eMSDatagram.Values array in Working_Mode_DHW
 		operationStatus = updateEMSDatagram(EMSDatagramID::Working_Mode_DHW, DatagramDataIndex::dayTDDHWIdx, dayTDDHW);
+	}
+
+	return operationStatus;
+}
+
+/**
+* Send an EMS command to change the thermal disinfection DHW program. It will run once per week
+* at the selected daySwitchPoint and hour, or once per day if dayTDDHW is 7.
+*
+* @param	hourTDDHW	Hour of the week to run the thermal disinfection.
+*
+* @return	True if it succeeds, false if it fails.
+*/
+
+boolean Calduino::setHourTDDHW(byte hourTDDHW)
+{
+	boolean operationStatus = false;
+
+	// evaluate if the selected hourTDDHW is2 correct
+	if (hourTDDHW < MAX_HOUR_DAY)
+	{
+		// desHourDHW is in position 6 of eMSDatagram.Values array in Working_Mode_DHW
 		operationStatus &= updateEMSDatagram(EMSDatagramID::Working_Mode_DHW, DatagramDataIndex::hourTDDHWIdx, hourTDDHW);
 	}
 

@@ -1,22 +1,8 @@
 var searchData=
 [
-  ['fanwork',['fanWork',['../_calduino_8cpp.html#a10982135b8e2f0634c0eab64745aeba9',1,'Calduino.cpp']]],
-  ['fanwork_5ft',['fanWork_t',['../_calduino_8h.html#a882df2faa49a5f4b4f806d95a4061224a2acaa99d373d88d68b2e294fff66489b',1,'Calduino.h']]],
-  ['fanworkidx',['fanWorkIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a5ee3ec9f1075f7e820446af292b869a8',1,'Calduino.h']]],
-  ['flags_5fdhw',['Flags_DHW',['../_calduino_8h.html#a77cfa3e115709d3315f6ca2696c001adafea557c2264d2543041b336f3aaa5d22',1,'Calduino.h']]],
-  ['flags_5fdhw_5fid',['Flags_DHW_ID',['../_calduino_8h.html#ade564ed281f3d26aac5279aa3ca955b0a48aa005afc7cef59781c2206b13608b4',1,'Calduino.h']]],
-  ['flags_5fdhw_5fmessage_5fsize',['FLAGS_DHW_MESSAGE_SIZE',['../_calduino_8cpp.html#a859cab511573bb5678062b2827ce2538',1,'Calduino.cpp']]],
-  ['flags_5fdhw_5fvalues_5fcount',['FLAGS_DHW_VALUES_COUNT',['../_calduino_8cpp.html#ad7c1b3101cd0ad9494096b9a96bcacac',1,'Calduino.cpp']]],
-  ['flagsdhwname',['flagsDHWName',['../_calduino_8cpp.html#a053618e09cce7ea3b66e00defb30d53f',1,'Calduino.cpp']]],
-  ['flamecurr',['flameCurr',['../_calduino_8cpp.html#aa61487f12079b70966b2f23d5be0ab65',1,'Calduino.cpp']]],
-  ['flamecurr_5ff',['flameCurr_f',['../_calduino_8h.html#a2c1f29b5b956e92e81798536b5c3f7c4af4822ebb1b8a463bdd2af73a1ab997ed',1,'Calduino.h']]],
-  ['flamecurridx',['flameCurrIdx',['../_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40aac80d1f5a968c76fe85a47a469912a7c',1,'Calduino.h']]],
-  ['float',['Float',['../_calduino_8h.html#a98071c3de31802ffcde6d278f590ce90ad67b0ee7230dcecb610254e4e5e589cd',1,'Calduino.h']]],
-  ['floatbytes',['floatBytes',['../struct_calduino_data.html#a5f4e60583f501defc4a327336478e414',1,'CalduinoData']]],
-  ['floatfactor',['floatFactor',['../struct_calduino_data.html#a3d4429c601cf6338a0e4cdbf5e4e90ea',1,'CalduinoData']]],
-  ['floatrequest',['FloatRequest',['../_calduino_8h.html#a2c1f29b5b956e92e81798536b5c3f7c4',1,'Calduino.h']]],
-  ['floatrequests',['floatRequests',['../_calduino_8cpp.html#a9171961c27d2cb59d37424085bea9da4',1,'Calduino.cpp']]],
-  ['flush',['flush',['../class_e_m_s_serial.html#a0e57cbbe2428a2d66d0efd4b9481f75b',1,'EMSSerial::flush()'],['../class_calduino_debug.html#a95d65b45229364b49cc17954f908aac3',1,'CalduinoDebug::flush()'],['../class_calduino_serial.html#a6a4783874a1c950b9f8cbc4aaf4ff36b',1,'CalduinoSerial::flush()']]],
-  ['fpstr',['FPSTR',['../_calduino_8h.html#ac5a6187ce68484c47801fcd107a969ad',1,'Calduino.h']]],
-  ['frameerror',['frameError',['../class_e_m_s_serial.html#acd829decf994e0078c21b211ca7faea5',1,'EMSSerial::frameError()'],['../class_calduino_serial.html#adab596ba3726bfc3fd56428619fa6b1e',1,'CalduinoSerial::frameError()']]]
+  ['getcalduinobitvalue',['getCalduinoBitValue',['../class_calduino.html#a2ac9fba4c4b52d5aa98c0d9a09a27cc3',1,'Calduino']]],
+  ['getcalduinobytevalue',['getCalduinoByteValue',['../class_calduino.html#ad60c4709b766d0af44acbfd18beb8302',1,'Calduino']]],
+  ['getcalduinofloatvalue',['getCalduinoFloatValue',['../class_calduino.html#ab195793220c3481bd4ec22c4ffd63222',1,'Calduino']]],
+  ['getcalduinoswitchpoint',['getCalduinoSwitchPoint',['../class_calduino.html#a7b89d928c9e48735c12f84398dc2fda5',1,'Calduino']]],
+  ['getcalduinoulongvalue',['getCalduinoUlongValue',['../class_calduino.html#a2955832b12b0f6a56a94dc7b511644b4',1,'Calduino']]]
 ];

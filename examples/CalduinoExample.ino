@@ -90,6 +90,9 @@ void loop()
 
 	calduino.printEMSDatagram(EMSDatagramID::UBA_Parameter_DHW);
 	WAIT_KEY;
+	
+	calduino.printEMSDatagram(EMSDatagramID::UBA_Parameter_DHW, DatagramDataIndex::selTempDHWIdx);
+	WAIT_KEY;
 
 	calduino.printEMSDatagram(EMSDatagramID::UBA_Monitor_DHW);
 	WAIT_KEY;

@@ -28,6 +28,8 @@
 *
 * Version  Date         Description
 * 0.1      25-Apr-2018  First release.
+* 0.2	   22-May-2018  Operation to set Thermal Disinfection splitted in two. 
+*						Retry factor adapted to minimize errors.
 *
 */
 
@@ -216,8 +218,7 @@ typedef struct SwitchPoint {
  * factor.
  */
 
-struct CalduinoData
-{
+struct CalduinoData {
 	prog_char* dataName;
 	CalduinoEncodeType encodeType;
 	CalduinoUnit unit;
@@ -320,8 +321,7 @@ enum DeviceID {
 * repeated values.
 */
 
-enum DatagramDataIndex
-{
+enum DatagramDataIndex {
 	yearIdx,
 	monthIdx,
 	dayIdx,
@@ -350,7 +350,7 @@ enum DatagramDataIndex
 	pumpModIdx,
 	burnStartsIdx,
 	burnWorkMinIdx,
-	heatWorkMinIdx,
+	burnWorkMinHIdx,
 	selTempDHWIdx = 0,
 	tempTDDHWIdx,
 	curTempDHWIdx = 0,
@@ -408,8 +408,7 @@ enum DatagramDataIndex
  * array.
  */
 
- enum ByteRequest
-{
+ enum ByteRequest {
 	year_b,
 	month_b,
 	day_b,
@@ -463,8 +462,7 @@ enum DatagramDataIndex
  * array.
  */
 
- enum FloatRequest
-{
+ enum FloatRequest {
 	curImpTemp_f,
 	retTemp_f,
 	flameCurr_f,
@@ -510,12 +508,11 @@ enum DatagramDataIndex
  * ULongRequests array.
  */
 
- enum ULongRequest
-{
+ enum ULongRequest {
 	uBAWorkingMin_ul,
 	burnStarts_ul,
 	burnWorkMin_ul,
-	heatWorkMin_ul,
+	burnWorkMinH_ul,
 	burnStartsDHW_ul,
 	burnWorkMinDHW_ul,
 };
@@ -526,8 +523,7 @@ enum DatagramDataIndex
  * array.
  */
 
- enum BitRequest
-{
+ enum BitRequest {
 		burnGas_t,
 		fanWork_t,
 		ignWork_t,
@@ -576,8 +572,7 @@ struct EMSDatagram {
 	const PROGMEM CalduinoData* data;
 
 	void printMessageName(char* str, boolean header, PrintFormat printFormat);
-	void printReturnTag(char* str, boolean returnValue, PrintFormat printFormat);
-
+	void printErrorTag(char* str, PrintFormat printFormat);
 };
 
 
@@ -649,14 +644,12 @@ private:
 	CalduinoSerial calduinoSerial;
 
 public:
-
 	Calduino();
 
 	boolean begin(EMSSerial *_calduinoSerial, Stream *debugSerial = NULL);
 
 	// Get EMS Commands
 	boolean printEMSDatagram(EMSDatagramID eMSDatagramID, DatagramDataIndex datagramDataIndex = ERROR_VALUE);
-	boolean printCalduinoByteValue(ByteRequest typeIdx);
 	byte getCalduinoByteValue(ByteRequest typeIdx);
 	float getCalduinoFloatValue(FloatRequest typeIdx);
 	unsigned long getCalduinoUlongValue(ULongRequest typeIdx);
@@ -682,12 +675,12 @@ public:
 	boolean setProgramDHW(byte selProgram);
 	boolean setProgramPumpDHW(byte selProgram);
 	boolean setOneTimeDHW(boolean selMode);
-	boolean setWorkModeTDDHW(boolean selMode);
-	boolean setProgramTDDHW(byte dayTherDisDHW, byte hourTherDisDHW);
+	boolean setWorkModeTDDHW(byte selMode);
+	boolean setDayTDDHW(byte dayTherDisDHW);
+	boolean setHourTDDHW(byte hourTherDisDHW);
 	boolean setProgramSwitchPoint(EMSDatagramID selProgram, byte switchPointID, byte operationSwitchPoint, byte daySwitchPoint, byte hourSwitchPoint, byte minuteSwitchPoint);
 
 	PrintFormat printFormat;
-
 };
 
 #pragma endregion Calduino

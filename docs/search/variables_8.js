@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['id',['id',['../struct_switch_point.html#a8e2cff8a02101052a8d69bb4e3ad7fbb',1,'SwitchPoint']]],
-  ['ignwork',['ignWork',['../_calduino_8cpp.html#aa31abd8ed267bba5cf55834d24ce7822',1,'Calduino.cpp']]]
+  ['rcdatetimename',['rCDatetimeName',['../_calduino_8cpp.html#a76e46371b14c85b0b838d5d85fe0c90c',1,'Calduino.cpp']]]
 ];

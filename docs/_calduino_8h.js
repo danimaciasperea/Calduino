@@ -138,7 +138,7 @@ var _calduino_8h =
       [ "pumpModIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40ab498b9d646c1ea3af8c023445bc7c40f", null ],
       [ "burnStartsIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a8945ee75f418c32ca8f1be2b4ddd9612", null ],
       [ "burnWorkMinIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a02132f65ffd6fa81465360891f740258", null ],
-      [ "heatWorkMinIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40aaadb9817c2aa35715dd2b7d3b6e66677", null ],
+      [ "burnWorkMinHIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a781a34cc1ec51e7f025d48856269aa27", null ],
       [ "selTempDHWIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a01dd4bb48efa100d76e7d0e6a7b956f3", null ],
       [ "tempTDDHWIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40adeae0e4ce0e66b3c5331144c3e7c1d4f", null ],
       [ "curTempDHWIdx", "_calduino_8h.html#ade42c7bc2289bc52173df41b261e4a40a16d980bf9b3a8218ca8683a96d8e5311", null ],
@@ -304,7 +304,7 @@ var _calduino_8h =
       [ "uBAWorkingMin_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa51019633a64ec0786f67135deebe9e51", null ],
       [ "burnStarts_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa0b183aaa754a1f54df2ec5f2ca2aa0f6", null ],
       [ "burnWorkMin_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa76ebd0657c765ce8c513c1f62e57cead", null ],
-      [ "heatWorkMin_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fadc184e72ab95767d151d8664c4b8cf18", null ],
+      [ "burnWorkMinH_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa04d1602f33cf70340c40c6b31460cb77", null ],
       [ "burnStartsDHW_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa8106d6b0e94593590848f9cc620b181a", null ],
       [ "burnWorkMinDHW_ul", "_calduino_8h.html#aa474fe3826e9b5d1fb18f7adcf81967fa9b1a11cdf487e64e08e346bf18ff1be0", null ]
     ] ]
