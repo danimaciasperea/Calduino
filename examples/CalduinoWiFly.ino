@@ -63,9 +63,10 @@
 *	-	Set Program DHW				calduino/?op=45&pr=YYY			pr - Program 000 = Like HC1 / 255 = Own Program  
 *	-	Set Program Pump DHW		calduino/?op=46&pr=YYY			pr - Program 000 = Like HC1 / 255 = Own Program  
 *	-	Set One Time DHW			calduino/?op=47&wm=0			wm - Working Mode 0 = off/ 1 = on  
-*	-	Set Working Mode TD DHW		calduino/?op=48&wm=0			wm - Working Mode 0 = off/ 1 = on  
-*	-	Set Program TD DHW			calduino/?op=49&h=HH&d=D		h - Thermal disinfection starting hour	d - Thermal disinfection day (0 - Monday, 1 - Tuesday, ... , 7 - Everyday)  
-*	-	Set Program Switch Point	calduino/?op=50&pr=YY&sp=XX&on=Z&d=D&h=HH&m=MM				pr - Program matches EMSDatagramID enumeration	sp - Switch Point Number 0 to 41	op = 0 off/ 1 = on/ 7 = undef	d = day 0=monday,...,6=sunday  
+*	-	Set Working Mode TD DHW		calduino/?op=48&wm=YYY			wm - Working Mode 000 = off/ 255 = on  
+*	-	Set Day TD DHW				calduino/?op=49&d=D					d - Thermal disinfection day (0 - Monday, 1 - Tuesday, ... , 7 - Everyday)  
+*	-	Set Hou TD DHW				calduino/?op=50&h=HH			h - Thermal disinfection starting hour
+*	-	Set Program Switch Point	calduino/?op=51&pr=YY&sp=XX&e=Z&d=D&h=HH&m=MM				pr - Program matches EMSDatagramID enumeration	sp - Switch Point Number 0 to 41	op = 0 off/ 1 = on/ 7 = undef	d = day 0=monday,...,6=sunday  
 *
 *	Calduino Commands
 *	-	Get Calduino stats basic	calduino/?op=60  
@@ -78,7 +79,7 @@
 #include <Calduino.h>
 
 /* Debugging functions */
-#define DEBUG
+#undef DEBUG
 
 #ifdef DEBUG
 #define DPRINT(item) EMSSerial0.print(item)
@@ -87,7 +88,7 @@
 #else
 #define DPRINT(item)
 #define DPRINTLN(item)
-#define DPRINTVALUE(item1)
+#define DPRINTVALUE(item1, item2)
 #endif
 
 #define SEND_WIFLY_XML_S(item1, item2, item3) snprintf_P(item3, sizeof(item3), PSTR("<%S>%s</%S>"), item1, item2, item1); wifly.println(item3);
@@ -125,8 +126,9 @@
 #define SET_PROGRAM_PUMP_DHW			46
 #define SET_ONETIME_DHW					47
 #define SET_WORK_MODE_TD_DHW			48
-#define SET_PROGRAM_TD_DHW				49
-#define SET_PROGRAM_SWITCH_POINT		50
+#define SET_DAY_TD_DHW					49
+#define SET_HOUR_TD_DHW					50
+#define SET_PROGRAM_SWITCH_POINT		51
 
 #define GET_CALDUINO_BASIC				60
 #define GET_CALDUINO_FULL				61
@@ -142,7 +144,7 @@ prog_char hc[] = "&hc=";
 prog_char wm[] = "&wm=";
 prog_char tp[] = "&tp=";
 prog_char pr[] = "&pr=";
-prog_char ex[] = "&ex=";
+prog_char e[] = "&e=";
 prog_char d[] = "&d=";
 prog_char h[] = "&h=";
 prog_char m[] = "&m=";
@@ -186,15 +188,14 @@ boolean getCalduinoStats(byte mode)
 		SEND_WIFLY_XML_D(F("FreeMemory"), wifly.getFreeMemory(), printXMLWiFly);
 	}
 	 
-	SEND_WIFLY_XML_UL(F("ArdUpTime"), (unsigned long)millis() / 1000, printXMLWiFly);				//0
-	SEND_WIFLY_XML_UL(F("WFUpTime"), (unsigned long)wifly.getUptime(), printXMLWiFly);				//1
-	SEND_WIFLY_XML_D(F("OpRec"), operationsOK + operationsNOK, printXMLWiFly);						//2
-	SEND_WIFLY_XML_D(F("OpOK"), operationsOK, printXMLWiFly);                                       //3
-	SEND_WIFLY_XML_D(F("OpNOK"), operationsNOK, printXMLWiFly);                                     //4
+	SEND_WIFLY_XML_UL(F("UpTimeCald"), (unsigned long)wifly.getUptime(), printXMLWiFly);				//0
+	SEND_WIFLY_XML_D(F("OpRecCald"), operationsOK + operationsNOK, printXMLWiFly);						//1
+	SEND_WIFLY_XML_D(F("OpOKCald"), operationsOK, printXMLWiFly);                                       //2
+	SEND_WIFLY_XML_D(F("OpNOKCald"), operationsNOK, printXMLWiFly);										//3
+	SEND_WIFLY_XML_UL(F("RTC"), (unsigned long)wifly.getRTC(), printXMLWiFly);							//4
 	wifly.println(F("</Calduino>"));
 	
 	return true;
-
 }
 
 
@@ -208,9 +209,11 @@ boolean getAllMonitors()
 {
 
 	wifly.println(F("<AllMonitors>"));
-	boolean operationStatus = calduino.printEMSDatagram(EMSDatagramID::UBA_Monitor_Fast);
+
+	boolean operationStatus = calduino.printEMSDatagram(EMSDatagramID::UBA_Working_Time);
+	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::UBA_Monitor_Fast);
 	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::UBA_Monitor_Slow);
-	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::UBA_Working_Time);
+	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::UBA_Parameter_DHW);
 	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::UBA_Monitor_DHW);
 	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::Working_Mode_DHW);
 	operationStatus &= calduino.printEMSDatagram(EMSDatagramID::Monitor_HC_1);
@@ -287,6 +290,8 @@ boolean restartWifly()
 	delay(MAIN_LOOP_WAIT_TIME);
 	digitalWrite(RESET_PIN, HIGH);
 	delay(MAIN_LOOP_WAIT_TIME);
+
+	operationsOK = operationsNOK = 0;
 
 	return wifly.isAssociated();
 }
@@ -474,19 +479,24 @@ boolean executeOperation()
 			}
 			case (SET_WORK_MODE_TD_DHW):
 			{
-				operationStatus = calduino.setWorkModeTDDHW(getParameterFromHTTPRequest(httpRequest, wm, 1));
+				operationStatus = calduino.setWorkModeTDDHW(getParameterFromHTTPRequest(httpRequest, wm, 3));
 				break;
 			}
-			case (SET_PROGRAM_TD_DHW):
+			case (SET_DAY_TD_DHW):
 			{
-				operationStatus = calduino.setProgramTDDHW(getParameterFromHTTPRequest(httpRequest, d, 1), getParameterFromHTTPRequest(httpRequest, h, 2));
+				operationStatus = calduino.setDayTDDHW(getParameterFromHTTPRequest(httpRequest, d, 1));
+				break;
+			}
+			case (SET_HOUR_TD_DHW):
+			{
+				operationStatus = calduino.setHourTDDHW(getParameterFromHTTPRequest(httpRequest, h, 2));
 				break;
 			}
 			case (SET_PROGRAM_SWITCH_POINT):
 			{
 				operationStatus = calduino.setProgramSwitchPoint((EMSDatagramID)getParameterFromHTTPRequest(httpRequest, pr, 2),
 					getParameterFromHTTPRequest(httpRequest, sp, 2),
-					getParameterFromHTTPRequest(httpRequest, ex, 1),
+					getParameterFromHTTPRequest(httpRequest, e, 1),
 					getParameterFromHTTPRequest(httpRequest, d, 1),
 					getParameterFromHTTPRequest(httpRequest, h, 2),
 					getParameterFromHTTPRequest(httpRequest, m, 2));
@@ -550,7 +560,7 @@ void setup()
 	connectWiFly();
 
 	// Begin calduino. Asign as debug serial the WiFly serial port, so the output generated by
-	// calduino will be redirected to the Wifly module and sent to the opened TCP connection. 
+	// calduino will be redirected to the Wifly module and sent to the opened TCP connection 
 	if (calduino.begin(&EMSSerial3, &EMSSerial2))
 	{
 		DPRINTLN(F("Setup: Calduino correctly started."));
@@ -575,6 +585,7 @@ void loop()
 
 	// close (if any) opened connections
 	wifly.close();
+	wifly.flush();
 
 	delay(MAIN_LOOP_WAIT_TIME);
 }

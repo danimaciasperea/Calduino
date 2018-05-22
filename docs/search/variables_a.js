@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['nightouttemphc',['nightOutTempHC',['../_calduino_8cpp.html#ab051cece09dced5bec8987779547549b',1,'Calduino.cpp']]],
-  ['nightsetbackhc',['nightSetbackHC',['../_calduino_8cpp.html#ae51b0180afe75d8a5370d08bc3d4ae3e',1,'Calduino.cpp']]],
-  ['noneunit',['noneUnit',['../_calduino_8cpp.html#a6700dc5c7b3cf8da5d779ff65be766dd',1,'Calduino.cpp']]]
+  ['workingmodedhwname',['workingModeDHWName',['../_calduino_8cpp.html#abde93725a30e6ec95725a97247badbec',1,'Calduino.cpp']]],
+  ['workingmodehc1name',['workingModeHC1Name',['../_calduino_8cpp.html#aa020b2d48de1d6d54799415f7451c8b2',1,'Calduino.cpp']]]
 ];

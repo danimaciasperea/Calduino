@@ -7,10 +7,11 @@ var class_calduino =
     [ "getCalduinoFloatValue", "class_calduino.html#ab195793220c3481bd4ec22c4ffd63222", null ],
     [ "getCalduinoSwitchPoint", "class_calduino.html#a7b89d928c9e48735c12f84398dc2fda5", null ],
     [ "getCalduinoUlongValue", "class_calduino.html#a2955832b12b0f6a56a94dc7b511644b4", null ],
-    [ "printCalduinoByteValue", "class_calduino.html#a44bc2cce9c63d1a852edb17f68d09d2a", null ],
     [ "printEMSDatagram", "class_calduino.html#aa17043f5a7e0ea1b09e65c321890567b", null ],
+    [ "setDayTDDHW", "class_calduino.html#ac490f3d2daa3491a9b16977c91c4922e", null ],
     [ "setHolidayModeHC", "class_calduino.html#aa1c105c290d736b9c9fab42dcab8b42d", null ],
     [ "setHomeHolidayModeHC", "class_calduino.html#a960fe75cf338510e3be560cf7c8afa28", null ],
+    [ "setHourTDDHW", "class_calduino.html#adffebb384d0b0f5580c74d7a715389d6", null ],
     [ "setNightSetbackModeHC", "class_calduino.html#a66bf766e74dccf8cfe54411aae3f8a8a", null ],
     [ "setNightThresholdOutTempHC", "class_calduino.html#a751be1516777e4bea7b57199976ed30d", null ],
     [ "setOneTimeDHW", "class_calduino.html#a37af3916c6e5246d8c32c362e0a4996c", null ],
@@ -20,7 +21,6 @@ var class_calduino =
     [ "setProgramHC", "class_calduino.html#a3549aec59df31e8a863e2a06fc53b87d", null ],
     [ "setProgramPumpDHW", "class_calduino.html#a6fb93c56a8abb8a7b4b13d11246c7d77", null ],
     [ "setProgramSwitchPoint", "class_calduino.html#aae26627794b881aaa744763974dc3acd", null ],
-    [ "setProgramTDDHW", "class_calduino.html#a7d7f06ee7ac696b87776173371a709d3", null ],
     [ "setRoomTempOffsetHC", "class_calduino.html#aefb24543a1f65510a17f2042b84098db", null ],
     [ "setSWThresholdTempHC", "class_calduino.html#a19774e584a6d80ef369a06e55c5ded23", null ],
     [ "setTemperatureDHW", "class_calduino.html#a35e7bdd3e41140e7d58c973288060c00", null ],
@@ -29,6 +29,6 @@ var class_calduino =
     [ "setWorkModeDHW", "class_calduino.html#a132662aa16549fe848c5cff20fda59d9", null ],
     [ "setWorkModeHC", "class_calduino.html#a640816eca9757ffa903135a5bf09d3c0", null ],
     [ "setWorkModePumpDHW", "class_calduino.html#aa03294b36287967e400daf7b8e5005fe", null ],
-    [ "setWorkModeTDDHW", "class_calduino.html#ae32e1440396ad2fcec221712a7c1b8ec", null ],
+    [ "setWorkModeTDDHW", "class_calduino.html#a35fd656d8fd8c992cd4c50849a4818c1", null ],
     [ "printFormat", "class_calduino.html#a9b81b2e8db249a8d386e37ff70cb582a", null ]
 ];
