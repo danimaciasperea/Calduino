@@ -771,8 +771,8 @@ prog_char dayModeDHW[] = { "DayModeDHW" };
 prog_char oneTimeDHW[] = { "OneTimeDHW" };
 prog_char desDHW[] = { "DesDHW" };
 prog_char prepareDHW[] = { "PrepareDHW" };
-prog_char burnStartsDHW[] = { "BurnStartsDHW" };
 prog_char burnWorkMinDHW[] = { "BurnWorkMinDHW" };
+prog_char burnStartsDHW[] = { "BurnStartsDHW" };
 
 const PROGMEM CalduinoData uBAMonitorDHWValues[] = {
 	{curTempDHW, CalduinoEncodeType::Float, CalduinoUnit::Celsius, 5, 0, 2, 10},
@@ -780,8 +780,8 @@ const PROGMEM CalduinoData uBAMonitorDHWValues[] = {
 	{oneTimeDHW, CalduinoEncodeType::Bit, CalduinoUnit::YesNo, 9, 1},
 	{desDHW, CalduinoEncodeType::Bit, CalduinoUnit::YesNo, 9, 2},
 	{prepareDHW, CalduinoEncodeType::Bit, CalduinoUnit::YesNo, 9, 3},
-	{burnStartsDHW, CalduinoEncodeType::ULong, CalduinoUnit::Times, 14},
-	{burnWorkMinDHW, CalduinoEncodeType::ULong, CalduinoUnit::Minute, 17}
+	{burnWorkMinDHW, CalduinoEncodeType::ULong, CalduinoUnit::Minute, 14},
+	{burnStartsDHW, CalduinoEncodeType::ULong, CalduinoUnit::Times, 17}
 };
 
 const PROGMEM EMSDatagram uBAMonitorDHW = { uBAMonitorDHWName, MessageID::UBA_Monitor_DHW_ID, DeviceID::UBA, UBA_MONITOR_DHW_MESSAGE_SIZE, UBA_MONITOR_DHW_VALUES_COUNT, uBAMonitorDHWValues };
