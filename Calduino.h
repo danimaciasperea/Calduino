@@ -30,7 +30,7 @@
 * 0.1      25-Apr-2018  First release.
 * 0.2	   22-May-2018  Operation to set Thermal Disinfection splitted in two. 
 *						Retry factor adapted to minimize errors.
-*
+* 0.3      05-Jun-2018  Corrected UBAMonitorDHW Datagram
 */
 
 /**
